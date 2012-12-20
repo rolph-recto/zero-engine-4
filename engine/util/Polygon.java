@@ -48,4 +48,39 @@ public class Polygon extends Shape {
 	public Point2D[] getVertices() {
 		return this.vertices;
 	}
+
+	public Point2D[] getBaseVertices() {
+		return this.base_vertices;
+	}
+	
+	//calculate direction vectors of the edges
+	public Vector2D[] getEdgeVectors() {
+		Vector2D[] edge_list = new Vector2D[this.base_vertices.length];
+		
+		//director of edge is the difference between the next vertex's coords and this vertex's coords
+		for (int i=0; i<this.vertices.length; i++) {
+			int next = (i < this.vertices.length-1) ? i+1 : 0;
+			edge_list[i] = new Vector2D(this.vertices[next].getX() - this.vertices[i].getX(), this.vertices[next].getY() - this.vertices[i].getY());
+		}
+		
+		return edge_list;
+	}
+	
+	public Vector2D[] getNormalVectors(boolean normalized) {
+		Vector2D[] edge_list = this.getEdgeVectors();
+		Vector2D[] normal_list = new Vector2D[edge_list.length];
+		
+		for (int i=0; i<edge_list.length; i++) {
+			normal_list[i] = new Vector2D(-edge_list[i].getY(), edge_list[i].getX());
+			if (normalized) {
+				normal_list[i].normalize();
+			}
+		}
+		
+		return normal_list;
+	}
+	
+	public Vector2D[] getNormalVectors() {
+		return this.getNormalVectors(false);
+	}
 }
