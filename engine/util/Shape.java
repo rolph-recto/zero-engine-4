@@ -8,14 +8,15 @@ abstract class Shape {
 	public void setPosition(double x, double y) {
 		this.pos_x = x;
 		this.pos_y = y;
+		this.reset();
 	}
 	
 	public void setPosX(double x) {
-		this.pos_x = x;
+		this.setPosition(x, this.pos_y);
 	}
 	
 	public void setPosY(double y) {
-		this.pos_y = y;
+		this.setPosition(this.pos_x, y);
 	}
 	
 	public double getPosX() {
@@ -61,13 +62,22 @@ abstract class Shape {
 		if (rotation < 0.0) {
 			this.rotation = rotation - (Math.ceil(rotation/360.0)*360.0);
 		}
-		else if (rotation > 360.0) {
-			this.rotation = rotation - (Math.ceil(rotation/360));
+		else if (rotation >= 360.0) {
+			this.rotation = rotation - (Math.ceil(rotation/360)*360.0);
 		}
 		else {
 			this.rotation = rotation;
 		}
 		this.reset();
+	}
+	
+	//adds to the current rotation
+	public void addRotation(double dr) {
+		this.setRotation(this.rotation + dr);
+	}
+	
+	public double getRotation() {
+		return this.rotation;
 	}
 	
 	//sets vertices to correct position according to scale, rotation and position
