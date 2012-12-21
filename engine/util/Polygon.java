@@ -83,4 +83,27 @@ public class Polygon extends Shape {
 	public Vector2D[] getNormalVectors() {
 		return this.getNormalVectors(false);
 	}
+
+	//return projection of the shape onto an axis
+	//projection is the min and max of the
+	//dotproduct of the axis vector and the shape's vertices
+	public double[] project(Vector2D axis) {
+		double min = Vector2D.dot(new Vector2D(this.vertices[0]), axis);
+		double max = min;
+		
+		//iterate through each vertex to find the min and max
+		//i starts at 1 not 0 b/c we already took into account the first index (0) above
+		for (int i=1; i<this.vertices.length; i++) {
+			double dot = Vector2D.dot(new Vector2D(this.vertices[i]), axis);
+			
+			if (dot < min) {
+				min = dot;
+			}
+			if (dot > max) {
+				max = dot;
+			}
+		}
+		
+		return new double[] { min, max };
+	}
 }

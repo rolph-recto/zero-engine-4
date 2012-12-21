@@ -11,6 +11,11 @@ public class Vector2D {
 		this.y = y;
 	}
 	
+	//create a position vector
+	public Vector2D(Point2D p) {
+		this(p.getX(), p.getY());
+	}
+	
 	public double getX() {
 		return this.x;
 	}
@@ -73,9 +78,13 @@ public class Vector2D {
 		this.div(this.getMagnitude());
 	}
 	
+	public static double dot(Vector2D v1, Vector2D v2) {
+		return (v1.getX()*v2.getX())+(v1.getY()*v2.getY());
+	}
+	
 	//dot product
 	public double dot(Vector2D v2) {
-		return (this.x*v2.getX())+(this.y*v2.getY());
+		return Vector2D.dot(this, v2);
 	}
 	
 	//returns a vector perpendicular to this one
