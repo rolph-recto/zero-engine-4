@@ -8,6 +8,7 @@ import java.awt.color.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -15,10 +16,12 @@ import javax.swing.*;
 import engine.util.*;
 
 public class TestJava2D extends Canvas {
-	private static Polygon p1 = new Polygon(new Point2D[] {new Point2D(-20.0, -20.0), 
-			new Point2D(20.0, -20.0), new Point2D(20.0, 20.0), new Point2D(-20.0, 20.0)});
-	private static Polygon p2 = new Polygon(new Point2D[] {new Point2D(-20.0, -20.0), 
-			new Point2D(20.0, -20.0), new Point2D(20.0, 20.0), new Point2D(-20.0, 20.0)});
+	private static Polygon p1 = new Polygon(new Vector2D[] {new Vector2D(-20.0, -20.0), new Vector2D(0.0, -30.0),
+			new Vector2D(20.0, -20.0), new Vector2D(20.0, 20.0), new Vector2D(-20.0, 20.0)});
+	private static Polygon p2 = new Polygon(new Vector2D[] {new Vector2D(-20.0, -20.0), 
+			new Vector2D(20.0, -20.0), new Vector2D(20.0, 20.0), new Vector2D(-20.0, 20.0)});
+	private static Circle c3 = new Circle(20.0);
+	private static Circle c4 = new Circle(20.0);
 	
 	private static BufferedImage img;
 	private static TexturePaint texture_img;
@@ -40,14 +43,16 @@ public class TestJava2D extends Canvas {
         }
         
         p1.setPosition(100.0, 100.0);
-        p2.setPosition(100.0, 120.0);
+        p2.setPosition(300.0, 300.0);
+        c3.setPosition(100.0, 120.0);
+        c4.setPosition(100.0, 200.0);
 	}
 	
 	public void mainLoop() {
 		boolean done = false;
 		while (done == false) {
 			p1.addRotation(1.0);
-			p2.setPosY(p2.getPosY()+0.05);
+			c3.setPosY(c3.getPosY()+0.10);
 			this.repaint();
 			try {
 				Thread.sleep(10);
@@ -63,11 +68,11 @@ public class TestJava2D extends Canvas {
         
         int[] xvert = new int[p1.getNumVertices()];
         int[] yvert = new int[p1.getNumVertices()];
-        Point2D[] vert_list = p1.getBaseVertices();
+        Vector2D[] vert_list = p1.getBaseVertices();
         
         AffineTransform transform = new AffineTransform();
         transform.translate(p1.getPosX(), p1.getPosY());
-        transform.scale(p1.getScaleX(), p1.getScaleY());
+        transform.scale(p1.getScale(), p1.getScale());
         transform.rotate(Math.toRadians(p1.getRotation()));
         
         for (int i=0; i<vert_list.length; i++) {
@@ -76,19 +81,17 @@ public class TestJava2D extends Canvas {
         }
         
         g2d.setTransform(transform);
-        if (this.collision()) {
-        	g2d.setColor(Color.RED);
-        }
+        if (p1.collision(c3)) g2d.setColor(Color.RED);
         else g2d.setColor(Color.WHITE);
         g2d.drawPolygon(xvert, yvert, vert_list.length);
         
         int[] xvert2 = new int[p2.getNumVertices()];
         int[] yvert2 = new int[p2.getNumVertices()];
-        Point2D[] vert_list2 = p2.getBaseVertices();
+        Vector2D[] vert_list2 = p2.getBaseVertices();
         
         transform.setToIdentity();
         transform.translate(p2.getPosX(), p2.getPosY());
-        transform.scale(p2.getScaleX(), p2.getScaleY());
+        transform.scale(p2.getScale(), p2.getScale());
         transform.rotate(Math.toRadians(p2.getRotation()));
         
         for (int i=0; i<vert_list2.length; i++) {
@@ -101,46 +104,19 @@ public class TestJava2D extends Canvas {
         g2d.drawPolygon(xvert2, yvert2, vert_list2.length);
         //g2d.setPaint(this.texture_img);
         //g2d.fillPolygon(xvert, yvert, vert_list.length);
-    }
-    
-    //are p1 and p2 colliding?
-    //use Separating Axis Theorem to check collision
-    public boolean collision() {
-    	//get separating axes for which to test collisions
-    	Vector2D[] axes1 = p1.getNormalVectors();
-    	Vector2D[] axes2 = p2.getNormalVectors();
-    	
-    	//find projections of p1 and p2 for each separating axis
-    	for (Vector2D axis : axes1) {
-    		double[] p1_proj = p1.project(axis);
-    		double[] p2_proj = p2.project(axis);
-    		
-    		System.out.println("PROJ1 :" + p1_proj[0] + " " + p1_proj[1] + " PROJ2 : " + p2_proj[0] + " " + p2_proj[1]);
-    		//check if projections are intersecting
-    		//intersects if either polygon's max is greater than min of other polygon
-    		//if one of the projections don't intersect, then the polygons don't intersect
-    		if (!(((p1_proj[1] > p2_proj[0]) && (p1_proj[1] < p2_proj[1])) || ((p2_proj[1] > p1_proj[0]) && (p2_proj[1] < p1_proj[1])))) {
-    			return false;
-    		}
-    	}
-    	
-    	//now do axes from p2
-    	for (Vector2D axis : axes2) {
-    		double[] p1_proj = p1.project(axis);
-    		double[] p2_proj = p2.project(axis);
-    		
-    		System.out.println("PROJ1 :" + p1_proj[0] + " " + p1_proj[1] + " PROJ2 : " + p2_proj[0] + " " + p2_proj[1]);
-    		//check if projections are intersecting
-    		//intersects if either polygon's max is greater than min of other polygon
-    		//if one of the projections don't intersect, then the polygons don't intersect
-    		if (!(((p1_proj[1] > p2_proj[0]) && (p1_proj[1] < p2_proj[1])) || ((p2_proj[1] > p1_proj[0]) && (p2_proj[1] < p1_proj[1])))) {
-    			return false;
-    		}
-    	}
-    	
-    	//if we have gotten this far, that means all the projections intersect
-    	//and the polygons intersect
-    	return true;
+        
+        transform.setToIdentity();
+        g2d.setTransform(transform);
+        g2d.setColor(Color.WHITE);
+        g2d.drawOval((int)(c3.getPosX()-c3.getRadius()), (int)(c3.getPosY()-c3.getRadius()),
+        		(int)(c3.getRadius()*2), (int)(c3.getRadius()*2));
+        
+        transform.setToIdentity();
+        g2d.setTransform(transform);
+        if (c4.collision(c3)) g2d.setColor(Color.CYAN);
+        else g2d.setColor(Color.WHITE);
+        g2d.drawOval((int)(c4.getPosX()-c4.getRadius()), (int)(c4.getPosY()-c4.getRadius()),
+        		(int)(c4.getRadius()*2), (int)(c4.getRadius()*2));
     }
 
     public static void main(String[] args) {

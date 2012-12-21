@@ -3,7 +3,18 @@ package engine.util;
 //Abstract class shape
 //Inherited by Rectangle and Polygon
 abstract class Shape {
-	protected double pos_x, pos_y, scale_x, scale_y, rotation;
+	protected double pos_x, pos_y, scale, rotation;
+	
+	protected Shape(double x, double y) {
+		this.scale = 1.0;
+		this.rotation = 0.0;
+		this.pos_x = x;
+		this.pos_y = y;
+	}
+	
+	protected Shape() {
+		this(0.0, 0.0);
+	}
 	
 	public void setPosition(double x, double y) {
 		this.pos_x = x;
@@ -28,32 +39,15 @@ abstract class Shape {
 	}
 	
 	//changes relative size of shape
-	public void setScale(double scale_x, double scale_y) {
-		if ((scale_x > 0.0) && (scale_y > 0.0)) {
-			this.scale_x = scale_x;
-			this.scale_y = scale_y;
+	public void setScale(double scale) {
+		if (scale > 0.0) {
+			this.scale = scale;
 		}
 		this.reset();
 	}
 	
-	//convenience function; scale equally for both x and y axes
-	public void setScale(double scale) {
-		this.setScale(scale, scale);
-	}
-	
-	//since the x and y axes have separate scale values,
-	//return the mean for getScale()
-	//return the actual values for getScaleX() and getScaleY()
 	public double getScale() {
-		return (this.scale_x + this.scale_y)/2;
-	}
-	
-	public double getScaleX() {
-		return this.scale_x;
-	}
-	
-	public double getScaleY() {
-		return this.scale_y;
+		return this.scale;
 	}
 	
 	//changes angle of rotation of the shape
@@ -82,4 +76,43 @@ abstract class Shape {
 	
 	//sets vertices to correct position according to scale, rotation and position
 	protected abstract void reset();
+	
+	protected abstract Projection project(Vector2D axis);
+	
+	protected abstract Vector2D[] getSeparatingAxes(Shape s);
+
+    //is the shape colliding with another shape?
+    //use Separating Axis Theorem to check collision
+    public boolean collision(Shape s) {
+    	//get separating axes for which to test collisions
+    	Vector2D[] axes1 = this.getSeparatingAxes(s);
+    	Vector2D[] axes2 = s.getSeparatingAxes(s);
+    	Vector2D[] axes = new Vector2D[axes1.length + axes2.length];
+    	System.arraycopy(axes1, 0, axes, 0, axes1.length);
+    	System.arraycopy(axes2, 0, axes, axes1.length, axes2.length);
+    	
+    	//find projections of p1 and p2 for each separating axis
+    	for (Vector2D axis : axes) {
+    		Projection p1_proj = this.project(axis);
+    		Projection p2_proj = s.project(axis);
+    		
+    		//lowest of the projection values
+    		double min = (p1_proj.getMin() < p2_proj.getMin()) ? p1_proj.getMin() : p2_proj.getMin();
+    		//highest of the projection values
+    		double max = (p1_proj.getMax() > p2_proj.getMax()) ? p1_proj.getMax() : p2_proj.getMax();
+    		//length of the two projections added together
+    		double length = (p1_proj.getMax()-p1_proj.getMin()) + (p2_proj.getMax()-p2_proj.getMin());
+    		
+    		//check if projections are intersecting
+    		//intersects if either polygon's max is greater than min of other polygon
+    		//if one of the projections don't intersect, then the polygons don't intersect
+    		if ( length <= max-min ) {
+    			return false;
+    		}
+    	}
+    	
+    	//if we have gotten this far, that means all the projections intersect
+    	//and the shapes intersect
+    	return true;
+    }
 }

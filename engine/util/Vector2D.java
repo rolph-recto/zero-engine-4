@@ -11,9 +11,12 @@ public class Vector2D {
 		this.y = y;
 	}
 	
-	//create a position vector
-	public Vector2D(Point2D p) {
-		this(p.getX(), p.getY());
+	public void setX(double x) {
+		this.x = x;
+	}
+	
+	public void setY(double y) {
+		this.y = y;
 	}
 	
 	public double getX() {
@@ -22,6 +25,11 @@ public class Vector2D {
 	
 	public double getY() {
 		return this.y;
+	}
+	
+	public void setMagnitude(double magnitude) {
+		this.normalize();
+		this.mul(magnitude);
 	}
 	
 	//magnitude of vector
@@ -78,13 +86,9 @@ public class Vector2D {
 		this.div(this.getMagnitude());
 	}
 	
-	public static double dot(Vector2D v1, Vector2D v2) {
-		return (v1.getX()*v2.getX())+(v1.getY()*v2.getY());
-	}
-	
 	//dot product
 	public double dot(Vector2D v2) {
-		return Vector2D.dot(this, v2);
+		return (this.x*v2.getX())+(this.y*v2.getY());
 	}
 	
 	//returns a vector perpendicular to this one
@@ -120,5 +124,14 @@ public class Vector2D {
 			this.x = this.y;
 			this.y = -c;
 		}
+	}
+	
+	//checks whether the vector is parallel with another vector
+	//two vectors are parallel if their absolute unit components are the same
+	public boolean isParallel(Vector2D v2) {
+		Vector2D v1_norm = Vector2D.normalize(this);
+		Vector2D v2_norm = Vector2D.normalize(v2);
+		
+		return ((Math.abs(v1_norm.getX()) == Math.abs(v2_norm.getX())) && (Math.abs(v1_norm.getY()) == Math.abs(v2_norm.getY())));
 	}
 }
