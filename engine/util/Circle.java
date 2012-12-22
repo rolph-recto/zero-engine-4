@@ -1,13 +1,13 @@
 package engine.util;
 
 public class Circle extends Shape {
-	public Circle(double pos_x, double pos_y, double radius) {
+	public Circle(double radius, double pos_x, double pos_y) {
 		super(pos_x, pos_y);
 		this.setScale(radius);
 	}
 	
 	public Circle(double radius) {
-		this(0.0, 0.0, radius);
+		this(radius, 0.0, 0.0);
 	}
 	
 	//treat the scale as the radius, and vice versa!
@@ -40,7 +40,7 @@ public class Circle extends Shape {
 		//the only separating axis is the vector between the centers
 		if (s instanceof Circle) {
 			Vector2D axis = new Vector2D(s.getPosX()-this.pos_x, s.getPosY()-this.pos_y);
-			axis.normalize();
+			axis.normalize();  //MUST NORMALIZE AXES OR COLLISION DETECTION WILL FAIL!
 			return new Vector2D[] { axis };
 		}
 		//if the other shape is a polygon, then
@@ -61,5 +61,8 @@ public class Circle extends Shape {
 		//other shape unknown; cannot determine what are the separating axes
 		return null;
 	}
-
+	
+	public Shape clone() {
+		return new Circle(this.scale, this.pos_x, this.pos_y);
+	}
 }

@@ -2,7 +2,7 @@ package engine.util;
 
 //Abstract class shape
 //Inherited by Rectangle and Polygon
-abstract class Shape {
+public abstract class Shape {
 	protected double pos_x, pos_y, scale, rotation;
 	
 	protected Shape(double x, double y) {
@@ -115,4 +115,6 @@ abstract class Shape {
     	//and the shapes intersect
     	return true;
     }
+    
+    public abstract Shape clone();
 }

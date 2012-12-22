@@ -76,7 +76,7 @@ public class Polygon extends Shape {
 		
 		for (int i=0; i<edge_list.length; i++) {
 			normal_list[i] = new Vector2D(-edge_list[i].getY(), edge_list[i].getX());
-			normal_list[i].normalize();
+			normal_list[i].normalize(); //MUST NORMALIZE AXES OR COLLISION DETECTION WILL FAIL!
 		}
 		
 		return normal_list;
@@ -107,6 +107,10 @@ public class Polygon extends Shape {
 	
 	protected Vector2D[] getSeparatingAxes(Shape s) {
 		return this.getNormalVectors();
+	}
+	
+	public Shape clone() {
+		return new Polygon(this.base_vertices, this.pos_x, this.pos_y);
 	}
 
 }

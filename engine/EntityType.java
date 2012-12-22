@@ -12,27 +12,16 @@ import java.util.*;
  * EntityType subclasses are NOT instantiated,
  * but rather used as static classes / Singletons
  */
-
-public abstract class EntityType {
-	protected String name = "NullEntityType";
-	protected Class<? extends Controller> controller_class;
-	protected boolean hivemind; //if true, Entities share the same controller
-	protected EntityType instance; //singleton instance
-	
-	public String getName() {
-		return this.name;
-	}
-	
-	public Class<? extends Controller> getControllerClass() {
-		return this.controller_class;
-	}
-	
-	public boolean isHivemind() {
-		return this.hivemind;
-	}
+public interface EntityType {
+	public abstract String getName();
+	public abstract Class<? extends Controller> getControllerClass();
+	public abstract boolean isHivemind();
 	
 	//creates an entity
 	//subclasses override this method to create
 	//instances of Entity subclasses
 	public abstract Entity createEntity();
+	
+	//returns the template model for entities of this EntityType
+	public abstract Model getModel();
 }

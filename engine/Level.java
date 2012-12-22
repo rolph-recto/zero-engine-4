@@ -76,29 +76,32 @@ public class Level extends Dispatcher implements Listener {
 	public long createEntity(String type_name, double x, double y, double z)  {
 		EntityType type = this.resources.getEntityType(type_name);
 		if (type == null) return -1;
-		else return this.createEntity(type, x, y, z);
+		else return this.createEntity(type, x, y);
 	}
 
 	//create entity and inserts it into the level
 	//returns object ID
-	public long createEntity(EntityType type, double x, double y, double z) {
+	public long createEntity(EntityType type, double x, double y) {
 		// TODO ADD CODE Validate type (check if it exists in the resource database)
 		
 		//validate position
-		if (!this.validPosition(x, y, z)) {
+		if (!this.validPosition(x, y)) {
 			throw new IllegalArgumentException("Invalid position for entity");
 		}
 		
 		//create new entity
 		Entity e = type.createEntity();
+		Model model_template = type.getModel();
+		Model model = new Model(model_template.getShape().clone(), model_template.getImage());
 		e.setType(type);
-		e.setPosition(x, y, z);
+		e.setModel(model);
+		e.setPosition(x, y);
 		
 		//Create controller
 		//If EntityType is hivemind,
 		//see if a controller for the type already exists
 		boolean create_controller = true;
-		if (type.hivemind) {
+		if (type.isHivemind()) {
 			for (Controller c : this.ctrl_list) {
 				if (type.getControllerClass().isInstance(c)) {
 					c.addEntity(e);
@@ -159,6 +162,11 @@ public class Level extends Dispatcher implements Listener {
 		return null;
 	}
 	
+	//return list of entities in the level
+	public ArrayList<Entity> getEntityList() {
+		return this.entity_list;
+	}
+	
 	public long insertController(Controller c) {
 		long id = this.getFreeId(IdType.CONTROLLER);
 		c.setId(id);
@@ -193,8 +201,9 @@ public class Level extends Dispatcher implements Listener {
 	}
 	
 	//check if position is within the level
-	protected boolean validPosition(double x, double y, double z) {
-		return ((x >= 0.0) && (y >= 0.0) && (z >= 0.0));
+	// TODO finish position validation code
+	protected boolean validPosition(double x, double y) {
+		return ((x >= 0.0) && (y >= 0.0));
 	}
 	
 	//move entities according to their acceleration and velocity

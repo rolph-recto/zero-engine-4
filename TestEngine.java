@@ -120,34 +120,50 @@ class PlayerController extends Controller {
 			break;
 		case ENTITY_MOVE:
 			move_msg = (EntityMoveMessage)msg;
-			System.out.println("Player moved: "+move_msg.getX()+" "+move_msg.getY()+" "+move_msg.getZ());
+			System.out.println("Player moved: "+move_msg.getX()+" "+move_msg.getY()+" "+move_msg.getRotation());
 		default:
 			break;
 		}
 	}
 }
 
-class PlayerType extends EntityType {
-	private static int MAX_HEALTH = 100;
-	private static int MAX_AMMO = 500;
-	private static final PlayerType instance = new PlayerType();
+class PlayerType implements EntityType {
+	public static final PlayerType instance = new PlayerType();
+	private static Model model;
 	
 	private PlayerType() {
-		this.name = "PlayerType";
-		this.controller_class = PlayerController.class;
-		this.hivemind = false;
+		Vector2D[] verts = new Vector2D[] {
+			new Vector2D(-10.0, -10.0), 
+			new Vector2D(10.0, -10.0), 
+			new Vector2D(10.0, 10.0), 
+			new Vector2D(10.0, 10.0) 
+		};
+		Polygon p = new Polygon(verts);
+		PlayerType.model = new Model((Shape)p, null);
 	}
 	
-	public static EntityType getInstance() {
-		return instance;
+	public String getName() {
+		return "PlayerType";
+	}
+	
+	public Class<? extends Controller> getControllerClass() {
+		return PlayerController.class;
 	}
 	
 	public Entity createEntity() {
 		return new Player();
 	}
 	
+	public Model getModel() {
+		return PlayerType.model;
+	}
+	
+	public boolean isHivemind() {
+		return false;
+	}
+	
 	public int getMaxHealth(){
-		return MAX_HEALTH;
+		return 500;
 	}
 }
 
@@ -155,14 +171,14 @@ public class TestEngine {
 	public static void main(String[] args) {
 		Scanner s = new Scanner(System.in);
 		Level level = new Level();
-		long id = level.createEntity(PlayerType.getInstance(), (float)0.0, (float)0.0, (float)0.0);
+		long id = level.createEntity(PlayerType.instance, 0.0, 0.0);
 		Entity player = level.getEntityById(id);
 		
 		boolean done = false;
 		while (!done) {
-			System.out.println("POS "+player.getPosX()+" "+player.getPosY()+" "+player.getPosZ());
-			System.out.println("VEL "+player.getVelX()+" "+player.getVelY()+" "+player.getVelZ());
-			System.out.println("ACCEL "+player.getAccelX()+" "+player.getAccelY()+" "+player.getAccelZ());
+			System.out.println("POS "+player.getPosX()+" "+player.getPosY());
+			System.out.println("VEL "+player.getVelX()+" "+player.getVelY());
+			System.out.println("ACCEL "+player.getAccelX()+" "+player.getAccelY());
 			System.out.println("What do you want to do?");
 			String input = s.nextLine();
 			if (input.equals("quit")) done = true;

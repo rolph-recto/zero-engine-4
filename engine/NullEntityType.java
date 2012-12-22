@@ -1,24 +1,20 @@
 package engine;
 
+import engine.util.*;
+
 /*
  * NullEntityType class
  * Blank template for Entities
  */
-public class NullEntityType extends EntityType {	
+public class NullEntityType implements EntityType {
+	public static final NullEntityType instance = new NullEntityType();
+	private static Model model;
+	
 	//set the constructor to private so an instance of NullEntityType can't be created
 	private NullEntityType() {
-		this.name = "NullEntityType";
-		this.controller_class = NullController.class;
-		this.hivemind = true;  //all entities who do nothing should share just one controller
-	}
-
-	//return the ONE instance of the object
-	//no other instances can be created
-	public EntityType getInstance() {
-		if (this.instance == null) {
-			this.instance = new NullEntityType();
-		}
-		return this.instance;
+		Shape s = new Circle(0.0);
+		
+		NullEntityType.model = new Model(s, null);
 	}
 	
 	//returns a plain Entity
@@ -28,5 +24,21 @@ public class NullEntityType extends EntityType {
 	public Entity createEntity() {
 		return new Entity();
 	}
-
+	
+	public Model getModel() {
+		return NullEntityType.model;
+	}
+	
+	public String getName() {
+		return "NullEntityType";
+	}
+	
+	public Class<? extends Controller> getControllerClass() {
+		return NullController.class;
+	}
+	
+	public boolean isHivemind() {
+		return true;
+	}
+	
 }

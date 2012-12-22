@@ -8,15 +8,15 @@ import engine.util.*;
  * message that represents ENTITY_MOVE and ENTITY_COMMAND_MOVE
  */
 public class EntityMoveMessage extends EntityMessage {
-	private double x, y, z;
-	public EntityMoveMessage(MsgType type, Entity e, double x, double y, double z) {
+	private double x, y, rot;
+	public EntityMoveMessage(MsgType type, Entity e, double x, double y, double rot) {
 		super(type, e);
 		if ((type != MsgType.ENTITY_MOVE) && (type != MsgType.ENTITY_COMMAND_MOVE)) {
 			throw new IllegalArgumentException("Message type must be ENTITY_MOVE or ENTITY_COMMAND_MOVE");
 		}
 		this.x = x;
 		this.y = y;
-		this.z = z;
+		this.rot = rot;
 	}
 	
 	//only instantiate getters, not setters
@@ -25,5 +25,5 @@ public class EntityMoveMessage extends EntityMessage {
 	
 	public double getY() { return this.y; }
 	
-	public double getZ() { return this.z; }
+	public double getRotation() { return this.rot; }
 }

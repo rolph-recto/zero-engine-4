@@ -13,9 +13,9 @@ import engine.msgtype.*;
 public class Entity extends Dispatcher implements Listener {
 	protected long id;
 	protected String name;
-	protected double pos_x, pos_y, pos_z;
-	protected double vel_x, vel_y, vel_z;
-	protected double accel_x, accel_y, accel_z;
+	protected Model model;
+	protected double vel_x, vel_y, vel_rot; //velocities of position and rotation
+	protected double accel_x, accel_y, accel_rot; //velocities of position and rotation
 	protected EntityType type;
 	protected boolean moved; //did the player move this frame?
 	
@@ -48,95 +48,101 @@ public class Entity extends Dispatcher implements Listener {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	public double getPosX() {
-		return pos_x;
+	
+	public Model getModel() {
+		return this.model;
+	}
+	
+	public void setModel(Model m) {
+		this.model = m;
 	}
 
-	public void setPosX(double pos_x) {
-		this.pos_x = pos_x;
+	public double getPosX() {
+		return this.model.getShape().getPosX();
 	}
 
 	public double getPosY() {
-		return pos_y;
+		return this.model.getShape().getPosY();
+	}
+	
+	public void setPosX(double pos_x) {
+		this.model.getShape().setPosX(pos_x);
 	}
 
 	public void setPosY(double pos_y) {
-		this.pos_y = pos_y;
-	}
-
-	public double getPosZ() {
-		return pos_z;
-	}
-
-	public void setPosZ(double pos_z) {
-		this.pos_z = pos_z;
-	}
-
-	public double getVelX() {
-		return vel_x;
+		this.model.getShape().setPosY(pos_y);
 	}
 	
-	public void setPosition(double x, double y, double z) {
-		this.pos_x = x;
-		this.pos_y = y;
-		this.pos_z = z;
+	public void setPosition(double x, double y) {
+		this.model.getShape().setPosition(x, y);
+	}
+
+	public double getRotation() {
+		return this.model.getShape().getRotation();
+	}
+	
+	public void setRotation(double rot) {
+		this.model.getShape().setRotation(rot);
+	}
+	
+	public double getVelX() {
+		return this.vel_x;
+	}
+	
+	public double getVelY() {
+		return this.vel_y;
+	}
+	
+	public double getVelRot() {
+		return this.vel_rot;
 	}
 
 	public void setVelX(double vel_x) {
 		this.vel_x = vel_x;
 	}
-
-	public double getVelY() {
-		return vel_y;
-	}
-
+	
 	public void setVelY(double vel_y) {
 		this.vel_y = vel_y;
 	}
-
-	public double getVelZ() {
-		return vel_z;
-	}
-
-	public void setVelZ(double vel_z) {
-		this.vel_z = vel_z;
+	
+	public void setVelRot(double vel_rot) {
+		this.vel_rot = vel_rot;
 	}
 	
-	public void setVelocity(double x, double y, double z) {
+	public void setVelocity(double x, double y, double rot) {
 		this.vel_x = x;
 		this.vel_y = y;
-		this.vel_z = z;
+		this.vel_rot = rot;
 	}
 
 	public double getAccelX() {
-		return accel_x;
+		return this.accel_x;
+	}
+
+	public double getAccelY() {
+		return this.accel_y;
+	}
+
+	public double getAccelRot() {
+		return this.accel_rot;
 	}
 
 	public void setAccelX(double accel_x) {
 		this.accel_x = accel_x;
 	}
-
-	public double getAccelY() {
-		return accel_y;
-	}
-
+	
 	public void setAccelY(double accel_y) {
 		this.accel_y = accel_y;
 	}
-
-	public double getAccelZ() {
-		return accel_z;
-	}
-
-	public void setAccelZ(double accel_z) {
-		this.accel_z = accel_z;
+	
+	public void setAccelRot(double accel_rot) {
+		this.accel_rot = accel_rot;
 	}
 	
-	public void setAcceleration(double x, double y, double z) {
+	public void setAcceleration(double x, double y, double rot) {
 		this.accel_x = x;
 		this.accel_y = y;
-		this.accel_z = z;
+		this.accel_rot = rot;
 	}
 	
 	public EntityType getType() { 
@@ -161,26 +167,31 @@ public class Entity extends Dispatcher implements Listener {
 	 * @param dt The time since the last update.
 	 */
 	public void move(double dt) {
-		this.setVelocity(vel_x + accel_x * dt, vel_y + accel_y * dt, vel_z + accel_z * dt);
-		this.setPosition(pos_x + vel_x * dt, pos_y + vel_y * dt, pos_z + vel_z * dt);
+		this.setVelocity(this.vel_x+(this.accel_x*dt), this.vel_y+(this.accel_y*dt), this.vel_rot+(this.accel_rot*dt));
+		this.setPosition(this.getPosX()+(this.vel_x*dt), this.getPosY()+(this.vel_y*dt));
+		this.setRotation(this.getRotation()+(this.vel_rot*dt));
 		
 		//only set moved flag if velocity is not 0
-		if ((vel_x != 0.0) || (vel_y != 0.0) || (vel_z != 0.0)) {
+		if ((this.vel_x != 0.0) || (this.vel_y != 0.0) || (this.vel_rot != 0.0)) {
 			moved = true;
 			
 			//broadcast message: ENTITY_MOVE
-			double dx, dy, dz;
-			EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_MOVE, this, vel_x*dt, vel_y*dt, vel_z*dt);
+			EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_MOVE, this,
+					this.vel_x*dt, this.vel_y*dt, this.vel_rot*dt);
 			this.broadcast(move_msg);
 		}
 	}
+	
 	
 	public void onMessage(Message msg) {
 		switch(msg.getType()) {
 		case ENTITY_COMMAND_MOVE:
 			EntityMoveMessage move_msg = (EntityMoveMessage)msg;
 			//treat values as components of force vector
-			this.setAcceleration(move_msg.getX(), move_msg.getY(), move_msg.getZ());
+			this.setAcceleration(move_msg.getX(), move_msg.getY(), move_msg.getRotation());
+			break;
+		default:
+			break;
 		}
 	}
 }
