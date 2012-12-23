@@ -141,63 +141,6 @@ public class TestJava2D extends Canvas {
         g.fillRect(0, 0, 640, 480);
         
     	this.view.drawObjects(g);
-    	/*
-        Graphics2D g2d = (Graphics2D) g;
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, 640, 480);
-        
-        int[] xvert = new int[p1.getNumVertices()];
-        int[] yvert = new int[p1.getNumVertices()];
-        Vector2D[] vert_list = p1.getBaseVertices();
-        
-        AffineTransform transform = new AffineTransform();
-        transform.translate(p1.getPosX(), p1.getPosY());
-        transform.scale(p1.getScale(), p1.getScale());
-        transform.rotate(Math.toRadians(p1.getRotation()));
-        
-        for (int i=0; i<vert_list.length; i++) {
-        	xvert[i] = (int)vert_list[i].getX();
-        	yvert[i] = (int)vert_list[i].getY();
-        }
-        
-        g2d.setTransform(transform);
-        if (p1.collision(c3)) g2d.setColor(Color.RED);
-        else g2d.setColor(Color.WHITE);
-        g2d.drawPolygon(xvert, yvert, vert_list.length);
-        
-        int[] xvert2 = new int[p2.getNumVertices()];
-        int[] yvert2 = new int[p2.getNumVertices()];
-        Vector2D[] vert_list2 = p2.getBaseVertices();
-        
-        transform.setToIdentity();
-        transform.translate(p2.getPosX(), p2.getPosY());
-        transform.scale(p2.getScale(), p2.getScale());
-        transform.rotate(Math.toRadians(p2.getRotation()));
-        
-        for (int i=0; i<vert_list2.length; i++) {
-        	xvert2[i] = (int)vert_list2[i].getX();
-        	yvert2[i] = (int)vert_list2[i].getY();
-        }
-        
-        g2d.setTransform(transform);
-        g2d.setColor(Color.WHITE);
-        g2d.drawPolygon(xvert2, yvert2, vert_list2.length);
-        //g2d.setPaint(this.texture_img);
-        //g2d.fillPolygon(xvert, yvert, vert_list.length);
-        
-        transform.setToIdentity();
-        g2d.setTransform(transform);
-        g2d.setColor(Color.WHITE);
-        g2d.drawOval((int)(c3.getPosX()-c3.getRadius()), (int)(c3.getPosY()-c3.getRadius()),
-        		(int)(c3.getRadius()*2), (int)(c3.getRadius()*2));
-        
-        transform.setToIdentity();
-        g2d.setTransform(transform);
-        if (c4.collision(c3)) g2d.setColor(Color.CYAN);
-        else g2d.setColor(Color.WHITE);
-        g2d.drawOval((int)(c4.getPosX()-c4.getRadius()), (int)(c4.getPosY()-c4.getRadius()),
-        		(int)(c4.getRadius()*2), (int)(c4.getRadius()*2));
-        */
     }
 
     public static void main(String[] args) {
