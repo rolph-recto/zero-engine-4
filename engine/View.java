@@ -77,8 +77,8 @@ public class View {
 			throw new IllegalArgumentException();
 		}
 		
-		this.cam_width = h;
-		this.cam_height = w;
+		this.cam_width = w;
+		this.cam_height = h;
 	}
 	
 	public void setCamWidth(int w) {
@@ -94,6 +94,9 @@ public class View {
 		Graphics2D g2d = (Graphics2D)g;
 		Rectangle2D rect = new Rectangle2D.Float();
 		rect.setRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
+		g2d.setClip(rect);
+		g2d.setColor(Color.GRAY);
+		g2d.fillRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
 		
 		ArrayList<Entity> entity_list = this.level.getEntityList();
 		AffineTransform transform = new AffineTransform();
