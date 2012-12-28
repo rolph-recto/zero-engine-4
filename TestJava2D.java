@@ -137,10 +137,11 @@ public class TestJava2D extends Canvas {
 	}
 	
     public void paint(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, 640, 480);
+    	Graphics2D g2d = (Graphics2D)g;
+        g2d.setColor(Color.BLACK);
+        g2d.fillRect(0, 0, 640, 480);
         
-    	this.view.drawObjects(g);
+    	this.view.drawObjects(g2d);
     }
 
     public static void main(String[] args) {

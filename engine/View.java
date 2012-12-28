@@ -18,12 +18,14 @@ public class View {
 	protected int cam_x, cam_y;
 	protected int cam_width, cam_height;
 	protected Level level;
+	protected Rectangle2D clip_rect;
 	
 	public View(Level l, int w, int h) throws NullPointerException {
 		if (l == null) {
 			throw new NullPointerException();
 		}
 		this.level = l;
+		this.clip_rect = new Rectangle2D.Float();
 		this.setPosition(0, 0);
 		this.setCamPosition(0, 0);
 		this.setCamDimension(w, h);
@@ -89,14 +91,21 @@ public class View {
 		this.setCamDimension(this.cam_height, h);
 	}
 	
-	//draw each object in the level
-	public void drawObjects(Graphics g) {
-		Graphics2D g2d = (Graphics2D)g;
-		Rectangle2D rect = new Rectangle2D.Float();
-		rect.setRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
-		g2d.setClip(rect);
+	protected void setClipRect(Graphics g) {
+		this.clip_rect.setRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
+		g.setClip(this.clip_rect);
+	}
+	
+	public void drawBackground(Graphics2D g2d) {
+		this.setClipRect(g2d);
+		
 		g2d.setColor(Color.GRAY);
 		g2d.fillRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
+	}
+	
+	//draw each object in the level
+	public void drawObjects(Graphics2D g2d) {
+		this.setClipRect(g2d);
 		
 		ArrayList<Entity> entity_list = this.level.getEntityList();
 		AffineTransform transform = new AffineTransform();
@@ -138,5 +147,10 @@ public class View {
 		        		(int)(c.getRadius()*2), (int)(c.getRadius()*2));
 			}
 		}
+	}
+	
+	public void draw(Graphics2D g2d) {
+		this.drawBackground(g2d);
+		this.drawObjects(g2d);
 	}
 }
