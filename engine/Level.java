@@ -66,6 +66,11 @@ public class Level extends Dispatcher implements Listener {
 	
 	//insert an existing entity into the level
 	public long insertEntity(Entity e) {
+		//check if the entity isn't in the level already
+		for (Entity e2: this.entity_list) {
+			if (e == e2) return e.getId();
+		}
+		//if it is not in the level already, set an id for the entity and add it
 		e.setId(this.getFreeId(IdType.ENTITY));
 		this.entity_list.add(e);	
 		return e.getId();
@@ -75,7 +80,9 @@ public class Level extends Dispatcher implements Listener {
 	//returns object ID
 	public long createEntity(String type_name, double x, double y, double z)  {
 		EntityType type = this.resources.getEntityType(type_name);
-		if (type == null) return -1;
+		if (type == null) {
+			throw new IllegalArgumentException("Level: No EntityType with name '"+type_name+"' exists in the resource database");
+		}
 		else return this.createEntity(type, x, y);
 	}
 
@@ -92,7 +99,7 @@ public class Level extends Dispatcher implements Listener {
 		//create new entity
 		Entity e = type.createEntity();
 		Model model_template = type.getModel();
-		Model model = new Model(model_template.getShape().clone(), model_template.getImage());
+		Model model = new Model(model_template.getShape().clone(), model_template.getSprite().clone());
 		e.setType(type);
 		e.setModel(model);
 		e.setPosition(x, y);
@@ -122,7 +129,7 @@ public class Level extends Dispatcher implements Listener {
 			}
 			//don't create the entity if there are any exceptions whatsoever
 			catch (Exception ex) {
-				return -1;
+				throw new RuntimeException("Level: Failed to create controller for entity");
 			}
 		}
 		
@@ -176,7 +183,7 @@ public class Level extends Dispatcher implements Listener {
 		//it is to the top of the list
 		boolean insert = false;
 		for (int i=0; i<this.ctrl_list.size(); i++) {
-			if (c.priority >= this.ctrl_list.get(i).priority) {
+			if (c.getPriority() >= this.ctrl_list.get(i).getPriority()) {
 				this.ctrl_list.add(i, c);
 				insert = true;
 				break;
@@ -229,20 +236,15 @@ public class Level extends Dispatcher implements Listener {
 		//check collisions
 		this.checkCollisions();
 		
-		//broadcast update message
+		//broadcast update message to controllers
 		for (Controller c : this.ctrl_list) {
 			c.onMessage(this.update_msg);
 		}
 		
-		//send the message to all the other listeners
+		//broadcast the message to all the other listeners
 		this.broadcast(this.update_msg);
 	}
 	
 	//level received a message
-	public void onMessage(Message msg) {
-		switch (msg.getType()) {
-		default:
-			break;
-		}
-	}
+	public void onMessage(Message msg) {}
 }

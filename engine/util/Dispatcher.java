@@ -28,7 +28,7 @@ final class Subscription {
 	}
 
 	public Listener getSubscriber() {
-		return subscriber;
+		return this.subscriber;
 	}
 
 	public void setSubscriber(Listener subscriber) {
@@ -36,7 +36,7 @@ final class Subscription {
 	}
 
 	public BitSet getMsgFilter() {
-		return msg_filter;
+		return this.msg_filter;
 	}
 
 	public void setMsgFilter(BitSet msg_filter) {

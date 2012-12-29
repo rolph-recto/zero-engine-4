@@ -17,18 +17,6 @@ public class NullEntityType implements EntityType {
 		NullEntityType.model = new Model(s, null);
 	}
 	
-	//returns a plain Entity
-	//other subclasses of EntityType can use this function
-	//to create subclasses of Entity
-	//ex: PlayerType creates Player entities
-	public Entity createEntity() {
-		return new Entity();
-	}
-	
-	public Model getModel() {
-		return NullEntityType.model;
-	}
-	
 	public String getName() {
 		return "NullEntityType";
 	}
@@ -41,4 +29,19 @@ public class NullEntityType implements EntityType {
 		return true;
 	}
 	
+	//returns a plain Entity
+	//other subclasses of EntityType can use this function
+	//to create subclasses of Entity
+	//ex: PlayerType creates Player entities
+	public Entity createEntity() {
+		return new Entity();
+	}
+	
+	public Model getModel() {
+		return NullEntityType.model;
+	}
+	
+	public boolean isDynamic() {
+		return false;
+	}
 }

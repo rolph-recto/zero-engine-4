@@ -76,7 +76,7 @@ public class View {
 	
 	public void setCamDimension(int w, int h) throws IllegalArgumentException {
 		if ((w < 0) || (h < 0)) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("View: Camera dimensions must be positive");
 		}
 		
 		this.cam_width = w;
@@ -104,7 +104,11 @@ public class View {
 	}
 	
 	//draw each object in the level
-	public void drawObjects(Graphics2D g2d) {
+	public void drawObjectOutlines(Graphics2D g2d) {
+		if (this.level == null) {
+			throw new RuntimeException("View: Level hook is null");
+		}
+		
 		this.setClipRect(g2d);
 		
 		ArrayList<Entity> entity_list = this.level.getEntityList();
@@ -151,6 +155,6 @@ public class View {
 	
 	public void draw(Graphics2D g2d) {
 		this.drawBackground(g2d);
-		this.drawObjects(g2d);
+		this.drawObjectOutlines(g2d);
 	}
 }

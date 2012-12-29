@@ -40,9 +40,10 @@ public abstract class Shape {
 	
 	//changes relative size of shape
 	public void setScale(double scale) {
-		if (scale > 0.0) {
-			this.scale = scale;
+		if (scale <= 0.0) {
+			throw new IllegalArgumentException("Shape: Scale value must be positive");
 		}
+		this.scale = scale;
 		this.reset();
 	}
 	

@@ -84,12 +84,16 @@ class PlayerType implements EntityType {
 		return new Player();
 	}
 	
+	public boolean isHivemind() {
+		return false;
+	}
+	
 	public Model getModel() {
 		return PlayerType.model;
 	}
 	
-	public boolean isHivemind() {
-		return false;
+	public boolean isDynamic() {
+		return true;
 	}
 }
 
@@ -141,7 +145,7 @@ public class TestJava2D extends Canvas {
         g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, 640, 480);
         
-    	this.view.drawObjects(g2d);
+    	this.view.draw(g2d);
     }
 
     public static void main(String[] args) {

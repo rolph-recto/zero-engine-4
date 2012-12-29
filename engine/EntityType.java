@@ -22,6 +22,12 @@ public interface EntityType {
 	//instances of Entity subclasses
 	public abstract Entity createEntity();
 	
+	//entity properties
+	
 	//returns the template model for entities of this EntityType
 	public abstract Model getModel();
+	
+	//is the entity dynamic (i.e., can it move?)
+	public abstract boolean isDynamic();
+	
 }

@@ -17,7 +17,8 @@ public class Entity extends Dispatcher implements Listener {
 	protected double vel_x, vel_y, vel_rot; //velocities of position and rotation
 	protected double accel_x, accel_y, accel_rot; //velocities of position and rotation
 	protected EntityType type;
-	protected boolean moved; //did the player move this frame?
+	protected boolean moved; //did the entity move this frame?
+	protected boolean dynamic; //can the entity move?
 	
 	public Entity () {
 		super();
@@ -160,6 +161,14 @@ public class Entity extends Dispatcher implements Listener {
 	public void setMoved(boolean move) {
 		this.moved = move;
 	}
+	
+	public boolean isDynamic() {
+		return this.dynamic;
+	}
+	
+	public void setDynamic(boolean dynamic) {
+		this.dynamic = dynamic;
+	}
 
 	/**
 	 * Updates the velocity, then the position of the entity.
@@ -167,18 +176,21 @@ public class Entity extends Dispatcher implements Listener {
 	 * @param dt The time since the last update.
 	 */
 	public void move(double dt) {
-		this.setVelocity(this.vel_x+(this.accel_x*dt), this.vel_y+(this.accel_y*dt), this.vel_rot+(this.accel_rot*dt));
-		this.setPosition(this.getPosX()+(this.vel_x*dt), this.getPosY()+(this.vel_y*dt));
-		this.setRotation(this.getRotation()+(this.vel_rot*dt));
-		
-		//only set moved flag if velocity is not 0
-		if ((this.vel_x != 0.0) || (this.vel_y != 0.0) || (this.vel_rot != 0.0)) {
-			moved = true;
+		//the entity only moves if it is dynamic
+		if (this.dynamic) {
+			this.setVelocity(this.vel_x+(this.accel_x*dt), this.vel_y+(this.accel_y*dt), this.vel_rot+(this.accel_rot*dt));
+			this.setPosition(this.getPosX()+(this.vel_x*dt), this.getPosY()+(this.vel_y*dt));
+			this.setRotation(this.getRotation()+(this.vel_rot*dt));
 			
-			//broadcast message: ENTITY_MOVE
-			EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_MOVE, this,
-					this.vel_x*dt, this.vel_y*dt, this.vel_rot*dt);
-			this.broadcast(move_msg);
+			//only set moved flag if velocity is not 0
+			if ((this.vel_x != 0.0) || (this.vel_y != 0.0) || (this.vel_rot != 0.0)) {
+				moved = true;
+				
+				//broadcast message: ENTITY_MOVE
+				EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_MOVE, this,
+						this.vel_x*dt, this.vel_y*dt, this.vel_rot*dt);
+				this.broadcast(move_msg);
+			}
 		}
 	}
 	

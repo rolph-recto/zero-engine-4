@@ -25,9 +25,9 @@ class Animation {
     public AnimationType type;
 
     public Animation() {
-        startFrame=0;
-        endFrame=0;
-        type=AnimationType.NORMAL;
+        this.startFrame=0;
+        this.endFrame=0;
+        this.type=AnimationType.NORMAL;
     }
 }
 
@@ -39,13 +39,14 @@ final class AnimationData {
     public int maxFrames; //number of frames an animation can have (imageWidth/offX)
     public int maxAnimations; //number of possible animations (imageHeight/offY)
     public BufferedImage image;
-    public ArrayList animationSet;
+    public ArrayList<Animation> animationSet;
 
     public AnimationData() {
-        name="";
-        frameWidth=0; frameHeight=0;
-        image=null;
-        animationSet=new ArrayList();
+        this.name="";
+        this.frameWidth=0;
+        this.frameHeight=0;
+        this.image=null;
+        this.animationSet=new ArrayList();
     }
 }
 
@@ -55,7 +56,7 @@ final class SpriteException extends RuntimeException {
 
     public SpriteException(Sprite s, String msg) {
         super(msg);
-        setSprite(s);
+        this.setSprite(s);
     }
 
     //sprite modifier method
@@ -87,280 +88,291 @@ public class Sprite {
 
     //constructor
     public Sprite() {
-        posX=0; posY=0;
-        frameNum=0; animationNum=0;
-        animation=null;
-        paused=false;
-        animationFactor=1;
-        drawNum=1;
-        alpha=1.0;
+        this.posX=0;
+        this.posY=0;
+        this.frameNum=0;
+        this.animationNum=0;
+        this.animation=null;
+        this.paused=false;
+        this.animationFactor=1;
+        this.drawNum=1;
+        this.alpha=1.0;
     }
 
     //constructor with sprite parameter to clone
     public Sprite(Sprite s) {
         this();
-        clone(s);
+        this.clone(s);
     }
 
     public Sprite(String name, BufferedImage img, int frameWidth, int frameHeight)
     throws SpriteException {
         this();
-        create(name,img,frameWidth,frameHeight);
+        this.create(name,img,frameWidth,frameHeight);
     }
 
     public Sprite(String name, InputStream input, int frameWidth, int frameHeight)
-    throws SpriteException, IOException {
+    throws IOException {
         this();
-        create(name,input,frameWidth,frameHeight);
+        this.create(name,input,frameWidth,frameHeight);
     }
 
     public Sprite(String name, URL input, int frameWidth, int frameHeight)
-    throws SpriteException, IOException {
+    throws IOException {
         this();
-        create(name,input,frameWidth,frameHeight);
+        this.create(name,input,frameWidth,frameHeight);
     }
 
     //clones a sprite's animation data
     //thus two sprites with different properties (position, transparency)
     //can share the same animation data
     public void clone(Sprite s) {
-        animation=s.animation;
+        this.animation=s.animation;
         //reset frame and animation to prevent overflow
         //(ex. currentAnim is 5 when theres only 3 animations)
-        frameNum=0; animationNum=0;
+        this.frameNum=0;
+        this.animationNum=0;
+    }
+    
+    //clones THIS sprite;
+    //this is the reverse operation of clone(spr)
+    public Sprite clone() {
+    	Sprite spr = new Sprite(this);
+    	return spr;
     }
 
     //creates new animation data
-    public void create(String name, BufferedImage img, int frameWidth, int frameHeight)
-    throws SpriteException {
-        if (img.getWidth(null) % frameWidth == 0 &&
-        img.getHeight(null) % frameHeight == 0) {
-            Animation a;
-            animation=new AnimationData();
-            animation.image=img;
-            animation.frameWidth=frameWidth;
-            animation.frameHeight=frameHeight;
-            animation.maxFrames=img.getWidth(null)/frameWidth;
-            animation.maxAnimations=img.getHeight(null)/frameHeight;
-            for (int i=1; i<=animation.maxAnimations; i++) {
-                a=new Animation();
-                a.startFrame=0;
-                a.endFrame=animation.maxFrames-1;
-                a.type=AnimationType.NORMAL;
-                animation.animationSet.add(a);
-            }
+    public void create(String name, BufferedImage img, int frameWidth, int frameHeight) {
+        if ((img.getWidth(null) % frameWidth != 0) || (img.getHeight(null) % frameHeight != 0)) {
+        	throw new IllegalArgumentException("Sprite: Frame dimension incompatible with image");
         }
-        else
-            throw new SpriteException(this, "Frame dimension incompatible with image");
+        
+        Animation a;
+        this.animation = new AnimationData();
+        this.animation.image = img;
+        this.animation.frameWidth = frameWidth;
+        this.animation.frameHeight = frameHeight;
+        this.animation.maxFrames = img.getWidth(null)/frameWidth;
+        this.animation.maxAnimations = img.getHeight(null)/frameHeight;
+        for (int i=1; i<=this.animation.maxAnimations; i++) {
+            a = new Animation();
+            a.startFrame = 0;
+            a.endFrame = this.animation.maxFrames-1;
+            a.type = AnimationType.NORMAL;
+            this.animation.animationSet.add(a);
+        }
     }
 
     public void create(String name, InputStream input, int frameWidth, int frameHeight)
-    throws SpriteException, IOException {
+    throws IOException {
         //convert input stream to image
         BufferedImage img=ImageIO.read(input);
-        create(name,img,frameWidth,frameHeight);
+        this.create(name,img,frameWidth,frameHeight);
     }
 
     public void create(String name, URL input, int frameWidth, int frameHeight)
-    throws SpriteException, IOException {
+    throws IOException {
         //convert input stream to image
         BufferedImage img=ImageIO.read(input);
-        create(name,img,frameWidth,frameHeight);
+        this.create(name,img,frameWidth,frameHeight);
     }
 
     //draws the sprite frame;
     //Note: tx, ty, tw, th is the clipping rectangle for the frame
-    public void draw(Graphics2D g, boolean autoUpdate, int tx, int ty, int tw, int th)
-    throws SpriteException {
-        if (animation != null) {
-            int dx1, dy1, dx2, dy2; //rectangle that marks where to draw on the screen
-            int sx1, sy1, sx2, sy2; //rectangle that marks what part of the image to draw
-            //screen coordinates = sprite's position + clipping offset
-            dx1=posX+tx; dy1=posY+ty;
-            dx2=dx1+tw; dy2=dy1+th;
-            //source image coordinates are determined
-            //by the animation and frame number and clipping offset
-            sx1=(frameNum*animation.frameWidth)+tx;
-            sy1=(animationNum*animation.frameHeight)+ty;
-            sx2=sx1+tw; sy2=sy1+th;
-            //save the original composition, add alpha transparency, draw,
-            //then return to the original composition
-            Composite originalComp=g.getComposite();
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)alpha));
-            g.drawImage(animation.image, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null);
-            g.setComposite(originalComp);
-
-            if (autoUpdate) update();
+    public void draw(Graphics2D g, boolean autoUpdate, int tx, int ty, int tw, int th) {
+        if (this.animation == null) {
+        	throw new RuntimeException("Sprite: Sprite has not been created nor cloned");
         }
-        else
-            throw new SpriteException(this, "Sprite does not have animation data");
+        
+        int dx1, dy1, dx2, dy2; //rectangle that marks where to draw on the screen
+        int sx1, sy1, sx2, sy2; //rectangle that marks what part of the image to draw
+        //screen coordinates = sprite's position + clipping offset
+        dx1=this.posX+tx; dy1=this.posY+ty;
+        dx2=dx1+tw; dy2=dy1+th;
+        //source image coordinates are determined
+        //by the animation and frame number and clipping offset
+        sx1=(this.frameNum*this.animation.frameWidth)+tx;
+        sy1=(this.animationNum*this.animation.frameHeight)+ty;
+        sx2=sx1+tw; sy2=sy1+th;
+        //save the original composition, add alpha transparency, draw,
+        //then return to the original composition
+        Composite originalComp=g.getComposite();
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)this.alpha));
+        g.drawImage(this.animation.image, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null);
+        g.setComposite(originalComp);
+
+        if (autoUpdate) update();
 
     }
     
     //draw sprite without a clipping rectangle
-    public void draw(Graphics2D g, boolean autoUpdate) throws SpriteException {
-        if (animation != null)
-            draw(g, autoUpdate, 0, 0, animation.frameWidth, animation.frameHeight);
-        else
-            throw new SpriteException(this, "Sprite does not have animation data");
+    public void draw(Graphics2D g, boolean autoUpdate) {
+        if (this.animation == null) {
+        	throw new RuntimeException("Sprite: Sprite has not been created nor cloned");
+        }
+        
+        this.draw(g, autoUpdate, 0, 0, animation.frameWidth, animation.frameHeight);
     }
 
     //draw sprite without a clipping rectangle and update it
-    public void draw(Graphics2D g) throws SpriteException {
-        if (animation != null)
-            draw(g, true, 0, 0, animation.frameWidth, animation.frameHeight);
-        else
-            throw new SpriteException(this, "Sprite does not have animation data");
+    public void draw(Graphics2D g) {
+        if (this.animation == null) {
+        	throw new RuntimeException("Sprite: Sprite has not been created nor cloned");
+        }
+        
+        this.draw(g, true, 0, 0, animation.frameWidth, animation.frameHeight);
     }
 
     //alpha accessor
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     //position accessors
     public int getPosX() {
-        return posX;
+        return this.posX;
     }
 
     public int getPosY() {
-        return posY;
+        return this.posY;
     }
 
     public int getWidth() {
-        return animation.frameWidth;
+        return this.animation.frameWidth;
     }
 
     public int getHeight() {
-        return animation.frameHeight;
+        return this.animation.frameHeight;
     }
 
     public boolean isPaused() {
-        return paused;
+        return this.paused;
     }
 
     //pauses the animation
     public void pause() {
-        paused=true;
+        this.paused=true;
     }
 
     //...guess what this one does?
     public void resume() {
-        paused=false;
+        this.paused=false;
     }
 
     //alpha modifier
-    public void setAlpha(double a) throws SpriteException {
-        if (a >= 0.0 && a <= 1.0) {
-            alpha=a;
+    public void setAlpha(double a) {
+        if (a < 0.0 || a > 1.0) {
+        	throw new IllegalArgumentException("Sprite: Alpha value must be between 0.0 and 1.0");
         }
-        else
-            throw new SpriteException(this, "Alpha value must be between 0.0 and 1.0");
+        
+        this.alpha=a;
     }
 
     //animation modifier
-    public void setAnimation(int a) throws SpriteException {
-        if (a >=0 && a < animation.animationSet.size()) {
-            animationNum=a;
+    public void setAnimation(int a) {
+        if (a < 0 || a >= this.animation.animationSet.size()) {
+        	throw new ArrayIndexOutOfBoundsException("Sprite: Animation number out of index bounds");
         }
-        else
-            throw new SpriteException(this, "Animation number out of index bounds");
+        
+        this.animationNum=a;
     }
 
     //sets animation type, startFrame, and endFrame
-    public void setAnimationProperties(int a, AnimationType type,
-    int frameStart, int frameEnd) throws SpriteException {
-        Animation anim=getAnimationByIndex(a);
-        anim.type=type;
-        if (frameStart < frameEnd) {
-            if (frameStart >= 0 && frameEnd < animation.maxFrames) {
-                anim.startFrame=frameStart;
-                anim.endFrame=frameEnd;
-            }
-            else
-                throw new SpriteException(this, "frameStart and/or frameEnd out of index bounds");
+    public void setAnimationProperties(int a, AnimationType type, int frameStart, int frameEnd) {
+        if (frameStart >= frameEnd) {
+        	throw new IllegalArgumentException("Sprite: frameStart must be before frameEnd");
         }
-        else
-            throw new SpriteException(this, "frameStart must be before frameEnd");
+        if (frameStart < 0 || frameEnd >= this.animation.maxFrames) {
+        	throw new ArrayIndexOutOfBoundsException("Sprite: frameStart and/or frameEnd out of index bounds");
+        }
+
+        Animation anim=this.getAnimationByIndex(a);
+        anim.type=type;
+        anim.startFrame=frameStart;
+        anim.endFrame=frameEnd;
     }
 
     //frameNum modifier
-    public void setFrame(int f) throws SpriteException {
-        Animation anim=getAnimationByIndex(animationNum);
-        if (f >= anim.startFrame && f <= anim.endFrame)
-            frameNum=f;
-        else
-            throw new SpriteException(this, "Frame number out of index bounds");
+    public void setFrame(int f) {
+        Animation anim=getAnimationByIndex(this.animationNum);
+        
+        if (f < anim.startFrame || f > anim.endFrame) {
+        	throw new ArrayIndexOutOfBoundsException("Sprite: Frame number out of index bounds");
+        }
+        
+        this.frameNum=f;
     }
 
     //animationFactor modifier; argument is number of updates between each frame
-    public void setAnimationFactor(int factor) throws SpriteException {
-        if (factor > 0)
-            animationFactor=factor;
-        else
-            throw new SpriteException(this, "Animation factor must be greater than 0");
+    public void setAnimationFactor(int factor) {
+        if (factor <= 0) {
+        	throw new IllegalArgumentException("Sprite: Animation factor must be greater than 0");
+        }
+        
+        this.animationFactor=factor;
     }
     
     //animationFactor modifier; argument is the percentage the animation slows down
-    public void setAnimationFactor(double factor) throws SpriteException {
-        if (factor > 0.0) {
-            animationFactor=(int)(1.0/factor);
+    public void setAnimationFactor(double factor) {
+        if (factor <= 0.0) {
+        	throw new IllegalArgumentException("Sprite: Animation factor must be greater than 0");
         }
-        else
-            throw new SpriteException(this, "Animation factor must be greater than 0");
+        
+        this.animationFactor=(int)(1.0/factor);
     }
 
     //position modifier
     public void setPosition(int x, int y) {
-        posX=x;
-        posY=y;
+        this.posX=x;
+        this.posY=y;
     }
 
     public void setPosX(int x) {
-        posX=x;
+        this.posX=x;
     }
 
-    public void setPosY(int y) throws SpriteException {
-        posY=y;
+    public void setPosY(int y) {
+        this.posY=y;
     }
 
     //returns animation object using array index
-    private Animation getAnimationByIndex(int a) throws SpriteException {
-        if (a >=0 && a < animation.animationSet.size()) {
-            return (Animation)animation.animationSet.get(a);
+    private Animation getAnimationByIndex(int a) {
+        if (a < 0 || a >= this.animation.animationSet.size()) {
+        	throw new ArrayIndexOutOfBoundsException("Sprite: Animation number out of index bounds");
         }
-        else
-            throw new SpriteException(this, "Animation number out of index bounds");
+        
+        return (Animation)this.animation.animationSet.get(a);
     }
 
     //called every update cycle
-    private void update() throws SpriteException {
+    private void update() {
         //time to update the frame
-        if (drawNum >= animationFactor) {
-            Animation anim=getAnimationByIndex(animationNum);
+        if (this.drawNum >= this.animationFactor) {
+            Animation anim=getAnimationByIndex(this.animationNum);
+            //animation type is NORMAL
             if (anim.type == AnimationType.NORMAL) {
                 //update ONLY when the sprite is not paused
-                if (paused==false) {
-                    frameNum++;
-                    if (frameNum >= anim.endFrame)
-                        frameNum=anim.startFrame;
+                if (this.paused==false) {
+                    this.frameNum++;
+                    if (this.frameNum >= anim.endFrame)
+                        this.frameNum = anim.startFrame;
                 }
             }
             //animation type is ONE_SHOT
             else {
                 //update ONLY when the sprite is not paused
-                if (paused==false) {
-                    frameNum++;
+                if (this.paused==false) {
+                    this.frameNum++;
                     //once one animation cycle is done, pause the sprite
-                    if (frameNum >= anim.endFrame)
-                        paused=true;
+                    if (this.frameNum >= anim.endFrame)
+                        this.paused=true;
                 }
             }
 
-            drawNum=1;
+            this.drawNum=1;
         }
         //else, increment the update counter
         else
-            drawNum++;
+            this.drawNum++;
     }
 }

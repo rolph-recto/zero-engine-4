@@ -27,6 +27,8 @@ public class Vector2D {
 		return this.y;
 	}
 	
+	//set magnitude by normalizing the vector
+	//and multiplying by a scalar value
 	public void setMagnitude(double magnitude) {
 		this.normalize();
 		this.mul(magnitude);
@@ -113,6 +115,9 @@ public class Vector2D {
 		this.perpendicular(false);
 	}
 	
+	//there are always two perpendicular vectors:
+	//if usual is false, return (-y, x)
+	//if usual is true, return (y, -x)
 	public void perpendicular(boolean usual) {
 		if (usual == false) {
 			double c = this.x;

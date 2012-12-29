@@ -6,18 +6,18 @@ import engine.util.*;
 
 public class Model {
 	private final Shape shape;
-	private final BufferedImage image;
+	private final Sprite sprite;
 	
-	public Model(Shape s, BufferedImage img) {
+	public Model(Shape s, Sprite spr) {
 		this.shape = s;
-		this.image = img;
+		this.sprite = spr;
 	}
 	
 	public Shape getShape() {
 		return this.shape;
 	}
 	
-	public BufferedImage getImage() {
-		return this.image;
+	public Sprite getSprite() {
+		return this.sprite;
 	}
 }

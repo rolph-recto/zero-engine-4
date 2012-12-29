@@ -7,8 +7,7 @@ import java.util.*;
 
 import engine.util.Listener;
 
-public abstract class Controller implements Listener{
-	public static int priority = 0; //controllers with higher priority are updated first
+public abstract class Controller implements Listener {
 	protected long id;
 	protected Level level; //level in which the controller belongs
 	protected ArrayList<Entity> entity_list;
@@ -102,5 +101,11 @@ public abstract class Controller implements Listener{
 			return this.entity_list.get(0);
 		}
 		else return null;
+	}
+	
+	//subclasses can modify this by overriding the method
+	//controllers with higher priority are updated first
+	public int getPriority() {
+		return 0;
 	}
 }

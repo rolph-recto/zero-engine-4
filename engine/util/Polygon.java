@@ -9,7 +9,14 @@ public class Polygon extends Shape {
 	protected Vector2D[] vertices;
 	
 	public Polygon(Vector2D[] v, double pos_x, double pos_y) {
+		//a polygon must have at least 3 sides
+		//i.e., the polygon with the least number of sides is the triangle
 		super(pos_x, pos_y);
+		
+		if (v.length < 3) {
+			throw new IllegalArgumentException("Polygon: Vertex list must have at least 3 elements");
+		}
+		
 		this.base_vertices = new Vector2D[v.length];
 		this.vertices = new Vector2D[v.length];
 		for (int i=0; i< v.length; i++) {

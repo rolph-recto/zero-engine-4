@@ -12,20 +12,9 @@ import engine.MsgType;
  */
 public class Message {
 	protected MsgType type;
-	protected HashMap<String, Object> data;
-	
-	public Message() {
-		data = new HashMap<String, Object> ();
-	}
 	
 	public Message(MsgType type) {
-		this();
 		this.setType(type);
-	}
-	
-	public Message(MsgType type, HashMap<String, Object> data) {
-		this.setType(type);
-		this.setData(data);
 	}
 
 	public MsgType getType() {
@@ -35,13 +24,4 @@ public class Message {
 	public void setType(MsgType type) {
 		this.type = type;
 	}
-
-	public HashMap<String, Object> getData() {
-		return this.data;
-	}
-
-	public void setData(HashMap<String, Object> data) {
-		this.data = data;
-	}
-	
 }

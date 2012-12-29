@@ -12,14 +12,19 @@ public class Circle extends Shape {
 	
 	//treat the scale as the radius, and vice versa!
 	public void setRadius(double radius) {
-		this.setScale(radius);
+		try {
+			this.setScale(radius);
+		}
+		catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Circle: Radius value must be positive");
+		}
 	}
 	
 	public double getRadius() {
 		return this.getScale();
 	}
 	
-	//don't need to do reset anything for a circle!
+	//don't need to reset anything for a circle!
 	protected void reset() {}
 	
 	//projection of a circle onto a vector

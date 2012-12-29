@@ -17,11 +17,11 @@ public class Projection {
 	}
 
 	public double getMin() {
-		return min;
+		return this.min;
 	}
 	
 	public double getMax() {
-		return max;
+		return this.max;
 	}
 
 }
