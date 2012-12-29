@@ -30,4 +30,8 @@ public interface EntityType {
 	//is the entity dynamic (i.e., can it move?)
 	public abstract boolean isDynamic();
 	
+	//constant of friction
+	//this is a value from 1 to 0
+	public abstract double getFriction();
+	
 }

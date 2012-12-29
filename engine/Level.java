@@ -104,6 +104,10 @@ public class Level extends Dispatcher implements Listener {
 		e.setModel(model);
 		e.setPosition(x, y);
 		
+		//set entity properties
+		e.setDynamic(type.isDynamic());
+		e.setFriction(type.getFriction());
+		
 		//Create controller
 		//If EntityType is hivemind,
 		//see if a controller for the type already exists
@@ -218,6 +222,8 @@ public class Level extends Dispatcher implements Listener {
 		for (Entity e : this.entity_list) {
 			e.setMoved(false); //trip only when position changes
 			e.move(1.0); //move with 1 time step
+			e.setVelocity(e.getVelX()*e.getFriction(), e.getVelY()*e.getFriction(),
+					e.getVelRot()*e.getFriction()); //apply friction
 			e.setAcceleration(0.0, 0.0, 0.0); //forces must apply themselves to objects every frame
 		}
 	}

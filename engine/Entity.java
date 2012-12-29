@@ -19,6 +19,7 @@ public class Entity extends Dispatcher implements Listener {
 	protected EntityType type;
 	protected boolean moved; //did the entity move this frame?
 	protected boolean dynamic; //can the entity move?
+	protected double friction; //constant of friction
 	
 	public Entity () {
 		super();
@@ -168,6 +169,19 @@ public class Entity extends Dispatcher implements Listener {
 	
 	public void setDynamic(boolean dynamic) {
 		this.dynamic = dynamic;
+	}
+	
+	public double getFriction() {
+		return this.friction;
+	}
+	
+	//friction should be a value between 0.0 and 1.0
+	public void setFriction(double friction) {
+		if (friction < 0.0 || friction > 1.0) {
+			throw new IllegalArgumentException("Entity: Friction constant must be between 0.0 and 1.0");
+		}
+		
+		this.friction = friction;
 	}
 
 	/**

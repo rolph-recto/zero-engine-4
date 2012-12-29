@@ -44,4 +44,8 @@ public class NullEntityType implements EntityType {
 	public boolean isDynamic() {
 		return false;
 	}
+	
+	public double getFriction() {
+		return 0.0;
+	}
 }

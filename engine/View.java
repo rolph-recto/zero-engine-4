@@ -3,6 +3,7 @@ package engine;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -99,7 +100,7 @@ public class View {
 	public void drawBackground(Graphics2D g2d) {
 		this.setClipRect(g2d);
 		
-		g2d.setColor(Color.GRAY);
+		g2d.setColor(Color.WHITE);
 		g2d.fillRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
 	}
 	
@@ -151,10 +152,42 @@ public class View {
 		        		(int)(c.getRadius()*2), (int)(c.getRadius()*2));
 			}
 		}
+		
+		transform.setToIdentity();
+		g2d.setTransform(transform);
+	}
+	
+	public void drawObjects(Graphics2D g2d) {
+		if (this.level == null) {
+			throw new RuntimeException("View: Level hook is null");
+		}
+		
+		ArrayList<Entity> entity_list = this.level.getEntityList();
+		this.setClipRect(g2d);
+		AffineTransform transform = new AffineTransform();
+
+		for (Entity e : entity_list) {
+			Model m = e.getModel();
+			Shape s = m.getShape();
+			Sprite spr = m.getSprite();
+			
+			transform.setToIdentity();
+			transform.translate(s.getPosX()+this.pos_x-this.cam_x, s.getPosY()+this.pos_y-this.cam_y);
+			transform.rotate(Math.toRadians(s.getRotation()));
+			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			g2d.setTransform(transform);
+			
+			spr.setPosition(-spr.getWidth()/2, -spr.getHeight()/2);
+			spr.draw(g2d);
+		}
+		
+		transform.setToIdentity();
+		g2d.setTransform(transform);
 	}
 	
 	public void draw(Graphics2D g2d) {
 		this.drawBackground(g2d);
-		this.drawObjectOutlines(g2d);
+		//this.drawObjectOutlines(g2d);
+		this.drawObjects(g2d);
 	}
 }
