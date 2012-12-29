@@ -97,15 +97,16 @@ public class View {
 		g.setClip(this.clip_rect);
 	}
 	
-	public void drawBackground(Graphics2D g2d) {
+	//draw a solid color background
+	public void drawBackground(Graphics2D g2d, Color color) {
 		this.setClipRect(g2d);
 		
-		g2d.setColor(Color.WHITE);
+		g2d.setColor(color);
 		g2d.fillRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
 	}
 	
-	//draw each object in the level
-	public void drawObjectOutlines(Graphics2D g2d) {
+	//draw entity shapes
+	public void drawEntityOutlines(Graphics2D g2d, Color color) {
 		if (this.level == null) {
 			throw new RuntimeException("View: Level hook is null");
 		}
@@ -137,7 +138,7 @@ public class View {
 		        }
 		        
 		        g2d.setTransform(transform);
-		        g2d.setColor(Color.WHITE);
+		        g2d.setColor(color);
 		        g2d.drawPolygon(xvert, yvert, vert_list.length);
 			}
 			//drawing circles
@@ -146,7 +147,7 @@ public class View {
 				
 				transform.setToIdentity();
 				g2d.setTransform(transform);
-		        g2d.setColor(Color.WHITE);
+		        g2d.setColor(color);
 		        g2d.drawOval((int)(c.getPosX()-c.getRadius())+this.pos_x-this.cam_x,
 		        		(int)(c.getPosY()-c.getRadius())+this.pos_y-this.cam_y,
 		        		(int)(c.getRadius()*2), (int)(c.getRadius()*2));
@@ -157,7 +158,8 @@ public class View {
 		g2d.setTransform(transform);
 	}
 	
-	public void drawObjects(Graphics2D g2d) {
+	//draw entity sprites
+	public void drawEntities(Graphics2D g2d) {
 		if (this.level == null) {
 			throw new RuntimeException("View: Level hook is null");
 		}
@@ -177,7 +179,7 @@ public class View {
 			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 			g2d.setTransform(transform);
 			
-			spr.setPosition(-spr.getWidth()/2, -spr.getHeight()/2);
+			spr.setPosition((int)(-spr.getWidth()/2), (int)(-spr.getHeight()/2));
 			spr.draw(g2d);
 		}
 		
@@ -186,8 +188,13 @@ public class View {
 	}
 	
 	public void draw(Graphics2D g2d) {
-		this.drawBackground(g2d);
-		//this.drawObjectOutlines(g2d);
-		this.drawObjects(g2d);
+		this.drawBackground(g2d, Color.WHITE);
+		this.drawEntityOutlines(g2d, Color.RED);
+		this.drawEntities(g2d);
+	}
+	
+	//
+	public void focusTo(Entity e) {
+		
 	}
 }

@@ -50,26 +50,6 @@ final class AnimationData {
     }
 }
 
-//Exception subclass to handle Sprite exceptions
-final class SpriteException extends RuntimeException {
-    private Sprite sprite;
-
-    public SpriteException(Sprite s, String msg) {
-        super(msg);
-        this.setSprite(s);
-    }
-
-    //sprite modifier method
-    public void setSprite(Sprite s) {
-        sprite=s;
-    }
-
-    //sprite accessor method
-    public Sprite getSprite() {
-        return sprite;
-    }
-}
-
 /* A class that encapsulates an image
  * and includes drawing properties (position, alpha transparency, etc).
  * The image is divided into a grid of frames, and then a specific frame
@@ -105,8 +85,7 @@ public class Sprite {
         this.clone(s);
     }
 
-    public Sprite(String name, BufferedImage img, int frameWidth, int frameHeight)
-    throws SpriteException {
+    public Sprite(String name, BufferedImage img, int frameWidth, int frameHeight) {
         this();
         this.create(name,img,frameWidth,frameHeight);
     }

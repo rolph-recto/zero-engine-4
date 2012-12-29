@@ -10,6 +10,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -120,6 +121,8 @@ public class TestJava2D extends JFrame {
 	
 	private Level level;
 	private View view;
+	private Tileset tileset;
+	private int tile_num;
 
 	public TestJava2D() {
 		super();
@@ -142,7 +145,12 @@ public class TestJava2D extends JFrame {
         try {
             this.img = ImageIO.read(this.getClass().getResource("texture.bmp"));
             this.texture_img = new TexturePaint(this.img, new Rectangle(-20, -20, 20, 20));
-        } catch (IOException e) {
+            this.tileset = new Tileset("Test",
+            		TestJava2D.class.getClassLoader().getResourceAsStream("tileset.bmp"),
+            		32, 32);
+            this.tile_num = 0;
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         
@@ -159,11 +167,12 @@ public class TestJava2D extends JFrame {
 	public void mainLoop() {
 		boolean done = false;
 		while (done == false) {
-			//this.view.setCamPosition(this.view.getCamX(), this.view.getCamY()+1);
+			//this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
 			this.level.update();
+			this.tile_num = (this.tile_num < 9) ? this.tile_num+1 : 0;
 			this.repaint();
 			try {
-				Thread.sleep(10);
+				Thread.sleep(30);
 			}
 			catch (InterruptedException e) {}
 		}
@@ -181,15 +190,14 @@ public class TestJava2D extends JFrame {
             g2d.fillRect(0, 0, 640, 480);
             
         	this.view.draw(g2d);
+        	this.tileset.draw(g2d, this.tile_num, 300+(this.tile_num*32), 300);
      
-    	} finally {
-    		// It is best to dispose() a Graphics object when done with it.
+    	}
+    	finally {
     		g.dispose();
     	}
-     
-    	// Shows the contents of the backbuffer on the screen.
+    
     	bf.show(); 
-    	Toolkit.getDefaultToolkit().sync();	
     }
 
     public static void main(String[] args) {
