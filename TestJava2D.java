@@ -147,7 +147,7 @@ public class TestJava2D extends JFrame {
             this.img = ImageIO.read(this.getClass().getResource("texture.bmp"));
             this.texture_img = new TexturePaint(this.img, new Rectangle(-20, -20, 20, 20));
             this.tileset = new Tileset("Test",
-            		TestJava2D.class.getClassLoader().getResourceAsStream("tileset.bmp"),
+            		TestJava2D.class.getClassLoader().getResourceAsStream("tileset.png"),
             		32, 32);
         }
         catch (IOException e) {
@@ -167,6 +167,19 @@ public class TestJava2D extends JFrame {
         this.tile_data.addTileTemplate("9", 9, null);
         
         this.map = new Map(this.tile_data, 50, 50);
+        this.map.fillLayer("base", 1);
+        
+        this.map.addLayer("overlay", 50, 50, -1);
+        this.map.setPointAtLayer("overlay", 0, 0, 2);
+        this.map.setPointAtLayer("overlay", 3, 5, 2);
+        this.map.setPointAtLayer("overlay", 3, 5, 2);
+        this.map.setPointAtLayer("overlay", 4, 5, 2);
+        this.map.setPointAtLayer("overlay", 5, 5, 2);
+        this.map.setPointAtLayer("overlay", 6, 5, 2);
+        this.map.setPointAtLayer("overlay", 7, 5, 2);
+        this.map.setPointAtLayer("overlay", 24, 24, 2);
+        this.map.setPointAtLayer("overlay", 23, 23, 2);
+        this.map.setPointAtLayer("overlay", 22, 22, 2);
         
         this.level = new Level(this.map, null);
         this.view = new View(this.level, 640, 416);
@@ -181,11 +194,11 @@ public class TestJava2D extends JFrame {
 	public void mainLoop() {
 		boolean done = false;
 		while (done == false) {
-			this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
+			//this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
 			this.level.update();
 			this.repaint();
 			try {
-				Thread.sleep(30);
+				Thread.sleep(10);
 			}
 			catch (InterruptedException e) {}
 		}

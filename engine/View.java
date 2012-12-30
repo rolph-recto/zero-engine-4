@@ -89,8 +89,14 @@ public class View {
 			throw new IllegalArgumentException("View: Camera dimensions must be positive");
 		}
 		
-		this.cam_width = w;
-		this.cam_height = h;
+		MapLayer base = this.level.getMap().getBaseLayer();
+		int tile_width = this.level.getMap().getTileData().getTileWidth();
+		int tile_height = this.level.getMap().getTileData().getTileHeight();
+		int map_width = base.getWidth()*tile_width;
+		int map_height = base.getHeight()*tile_height;
+		
+		this.cam_width = (w <= map_width) ? w : map_width;
+		this.cam_height = (h <= map_height) ? h : map_height;
 	}
 	
 	public void setCamWidth(int w) {
@@ -254,11 +260,17 @@ public class View {
 		}
 		else {
 			//treat camera position as a ratio relative to the layer dimensions
-			double cam_x_ratio = this.cam_x/(base.getWidth()*tile_width);
+			//ternary operator is needed to bound the camera position relative
+			//to the layer dimension and camera dimension
+			double cam_x_ratio = (double)this.cam_x/((double)base.getWidth()*(double)tile_width);
 			cam_x = (int)Math.floor(cam_x_ratio * (layer.getWidth()*tile_width));
+			cam_x = (cam_x <= (layer.getWidth()*tile_width)- this.cam_width) ? cam_x
+					: (layer.getWidth()*tile_width)-this.cam_width;
 			
-			double cam_y_ratio = this.cam_y/(base.getHeight()*tile_height);
+			double cam_y_ratio = (double)this.cam_y/((double)base.getHeight()*(double)tile_height);
 			cam_y = (int)Math.floor(cam_y_ratio * (layer.getHeight()*tile_height));
+			cam_y = (cam_y <= (layer.getHeight()*tile_height)- this.cam_height) ? cam_y
+					: (layer.getHeight()*tile_height)-this.cam_height;
 		}
 		
 		int offset_width, offset_height; //offset of camera dimension relative to tile dimensions
@@ -278,11 +290,19 @@ public class View {
 		tile_y = (offset_y <= offset_height) ? (int)(Math.ceil(this.cam_height/tile_height))
 				: ((int)Math.ceil(this.cam_height/tile_height))+1;
 		
+		int start_x, start_y; //initial tile position to draw
+		start_x = (int)Math.floor(cam_x/tile_width);
+		start_y = (int)Math.floor(cam_y/tile_height);
+		
+		//make sure we don't draw out of bounds
+		//tile_x = (start_x+tile_x < layer.getWidth()) ? tile_x : layer.getWidth()-start_x;
+		//tile_y = (start_y+tile_y < layer.getHeight()) ? tile_y : layer.getHeight()-start_y;
+		
 		//finally, draw the visible tiles
 		int tile_num, pos_x, pos_y;
 		for (int y=0; y < tile_y; y++) {
 			for (int x=0; x < tile_x; x++) {
-				tile_num = layer.getPointData(x, y);
+				tile_num = layer.getPointData(start_x+x, start_y+y);
 				pos_x = this.pos_x - offset_x + (x*tile_width);
 				pos_y = this.pos_y - offset_y + (y*tile_height);
 				tileset.draw(g2d, tile_num, pos_x, pos_y);

@@ -199,7 +199,7 @@ public class Map {
 	}
 
 	//add a new layer to the map
-	public void addLayer(String name, int width, int height, int order) {
+	public void addLayer(String name, int width, int height, int fill, int order) {
 		//check if a layer with the same name already exists
 		if (this.getLayerByName(name) != null) {
 			throw new IllegalArgumentException("Map: A layer with that name already exists");
@@ -209,7 +209,12 @@ public class Map {
 		}
 		
 		MapLayer layer = new MapLayer(name, width, height, order);
+		layer.fillData(fill);
 		this.insertLayer(layer);
+	}
+	
+	public void addLayer(String name, int width, int height, int order) {
+		this.addLayer(name, width, height, 0, order);
 	}
 	
 	public void addLayer(String name, int[][] data, int order) {
@@ -270,7 +275,7 @@ public class Map {
 	
 	//fill a layer with a specific time template index
 	public void fillLayer(String name, int fill) {
-		if (this.isValidIndex(fill)) {
+		if (this.isValidIndex(fill) == false) {
 			throw new IllegalArgumentException("Map: Invalid tile template index");
 		}
 		
