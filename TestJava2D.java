@@ -122,7 +122,8 @@ public class TestJava2D extends JFrame {
 	private Level level;
 	private View view;
 	private Tileset tileset;
-	private int tile_num;
+	private TileData tile_data;
+	private Map map;
 
 	public TestJava2D() {
 		super();
@@ -148,13 +149,26 @@ public class TestJava2D extends JFrame {
             this.tileset = new Tileset("Test",
             		TestJava2D.class.getClassLoader().getResourceAsStream("tileset.bmp"),
             		32, 32);
-            this.tile_num = 0;
         }
         catch (IOException e) {
             e.printStackTrace();
         }
         
-        this.level = new Level();
+        this.tile_data = new TileData(this.tileset);
+        this.tile_data.addTileTemplate("0", 0, null);
+        this.tile_data.addTileTemplate("1", 1, null);
+        this.tile_data.addTileTemplate("2", 2, null);
+        this.tile_data.addTileTemplate("3", 3, null);
+        this.tile_data.addTileTemplate("4", 4, null);
+        this.tile_data.addTileTemplate("5", 5, null);
+        this.tile_data.addTileTemplate("6", 6, null);
+        this.tile_data.addTileTemplate("7", 7, null);
+        this.tile_data.addTileTemplate("8", 8, null);
+        this.tile_data.addTileTemplate("9", 9, null);
+        
+        this.map = new Map(this.tile_data, 50, 50);
+        
+        this.level = new Level(this.map, null);
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
@@ -167,9 +181,8 @@ public class TestJava2D extends JFrame {
 	public void mainLoop() {
 		boolean done = false;
 		while (done == false) {
-			//this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
+			this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
 			this.level.update();
-			this.tile_num = (this.tile_num < 9) ? this.tile_num+1 : 0;
 			this.repaint();
 			try {
 				Thread.sleep(30);
@@ -190,8 +203,6 @@ public class TestJava2D extends JFrame {
             g2d.fillRect(0, 0, 640, 480);
             
         	this.view.draw(g2d);
-        	this.tileset.draw(g2d, this.tile_num, 300+(this.tile_num*32), 300);
-     
     	}
     	finally {
     		g.dispose();

@@ -70,6 +70,14 @@ public class TileData {
 		return this.tile_list.length;
 	}
 	
+	public int getTileWidth() {
+		return this.tileset.getTileWidth();
+	}
+	
+	public int getTileHeight() {
+		return this.tileset.getTileHeight();
+	}
+	
 	public TileTemplate getTileTemplate(int index) {
 		if (index < 0 || index >= this.tile_list.length) {
 			throw new IllegalArgumentException("TileData: Invalid index for tile template");
@@ -84,5 +92,12 @@ public class TileData {
 		}
 		
 		this.tile_list[index] = new TileTemplate(name, index, shape);
+	}
+	
+	public void setTileTemplates(TileTemplate[] tiles) {
+		if (tiles.length != this.tile_list.length) {
+			throw new IllegalArgumentException("TileData: Number of tile templates do not match number of tiles in tileset");
+		}
+		this.tile_list = tiles;
 	}
 }

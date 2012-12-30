@@ -15,16 +15,17 @@ import engine.msgtype.*;
  */
 public class Level extends Dispatcher implements Listener {
 	enum IdType { ENTITY, CONTROLLER; }
+	protected Map map; //does not have a modifier method, not a good idea to change maps halfway through a game
 	protected final ArrayList<Entity> entity_list;
 	protected final ArrayList<Controller> ctrl_list;
 	protected long entity_id; //next id to assign if entity id list is empty
 	protected ArrayList<Long> entity_id_list; //list of free ids
 	protected long ctrl_id; //next id to assign if ctrl id list is empty
 	protected ArrayList<Long> ctrl_id_list; //list of free ids
-	protected LevelMessage update_msg; //message used to update controller
 	protected ResourceDB resources;
+	protected LevelMessage update_msg; //message used to update controller
 	
-	public Level() {
+	protected Level() {
 		super();
 		this.entity_list = new ArrayList<Entity> ();
 		this.ctrl_list = new ArrayList<Controller> ();
@@ -35,9 +36,14 @@ public class Level extends Dispatcher implements Listener {
 		this.update_msg = new LevelMessage(MsgType.LEVEL_UPDATE, this);
 	}
 	
-	public Level(ResourceDB db) {
+	public Level(Map m, ResourceDB db) {
 		this();
+		this.map = m;
 		this.resources = db;
+	}
+	
+	public Map getMap() {
+		return this.map;
 	}
 	
 	//returns a free id

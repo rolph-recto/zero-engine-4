@@ -62,9 +62,18 @@ public class View {
 	}
 	
 	public void setCamPosition(int x, int y) {
-		// TODO add validation for map dimension
 		this.cam_x = (x >= 0) ? x : 0;
 		this.cam_y = (y >= 0) ? y : 0;
+		
+		MapLayer base = this.level.getMap().getBaseLayer();
+		int tile_width = this.level.getMap().getTileData().getTileWidth();
+		int tile_height = this.level.getMap().getTileData().getTileHeight();
+		int map_width = base.getWidth()*tile_width;
+		int map_height = base.getHeight()*tile_height;
+		
+		//camera position is bound by the map dimension minus the camera dimension
+		this.cam_x = (this.cam_x <= map_width-this.cam_width) ? this.cam_x : map_width-this.cam_width;
+		this.cam_y = (this.cam_y <= map_height-this.cam_height) ? this.cam_y : map_height-this.cam_height;
 	}
 	
 	public int getCamHeight() {
@@ -99,8 +108,6 @@ public class View {
 	
 	//draw a solid color background
 	public void drawBackground(Graphics2D g2d, Color color) {
-		this.setClipRect(g2d);
-		
 		g2d.setColor(color);
 		g2d.fillRect(this.pos_x, this.pos_y, this.cam_width, this.cam_height);
 	}
@@ -111,12 +118,9 @@ public class View {
 			throw new RuntimeException("View: Level hook is null");
 		}
 		
-		this.setClipRect(g2d);
-		
 		ArrayList<Entity> entity_list = this.level.getEntityList();
 		AffineTransform transform = new AffineTransform();
 		
-		// TODO implement drawing textures, not just outlines
 		for (Entity e : entity_list) {
 			Shape s = e.getModel().getShape();
 			
@@ -165,7 +169,6 @@ public class View {
 		}
 		
 		ArrayList<Entity> entity_list = this.level.getEntityList();
-		this.setClipRect(g2d);
 		AffineTransform transform = new AffineTransform();
 
 		for (Entity e : entity_list) {
@@ -176,7 +179,6 @@ public class View {
 			transform.setToIdentity();
 			transform.translate(s.getPosX()+this.pos_x-this.cam_x, s.getPosY()+this.pos_y-this.cam_y);
 			transform.rotate(Math.toRadians(s.getRotation()));
-			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 			g2d.setTransform(transform);
 			
 			spr.setPosition((int)(-spr.getWidth()/2), (int)(-spr.getHeight()/2));
@@ -187,14 +189,123 @@ public class View {
 		g2d.setTransform(transform);
 	}
 	
-	public void draw(Graphics2D g2d) {
-		this.drawBackground(g2d, Color.WHITE);
-		this.drawEntityOutlines(g2d, Color.RED);
-		this.drawEntities(g2d);
+	//draw parts of the map that are behind entities
+	public void drawMapBackground(Graphics2D g2d) {
+		ArrayList<MapLayer> layers = this.level.getMap().getLayerList();
+		
+		for (MapLayer layer : layers) {
+			//once all the background layers have been drawn, stop drawing
+			if (layer.getOrder() > 0) {
+				break;
+			}
+			this.drawMapLayer(g2d, layer);
+		}
 	}
 	
-	//
-	public void focusTo(Entity e) {
+	//draw parts of the map that are in front of entities
+	public void drawMapForeground(Graphics2D g2d) {
+		ArrayList<MapLayer> layers = this.level.getMap().getLayerList();
 		
+		for (MapLayer layer : layers) {
+			//only draw foreground layers
+			if (layer.getOrder() > 0) {
+				this.drawMapLayer(g2d, layer);
+			}
+		}
+	}
+	
+	//draw all the layers of the map
+	public void drawMap(Graphics2D g2d) {
+		ArrayList<MapLayer> layers = this.level.getMap().getLayerList();
+		
+		for (MapLayer layer : layers) {
+			this.drawMapLayer(g2d, layer);
+		}
+	}
+	
+	//draw a single layer
+	public void drawMapLayer(Graphics2D g2d, String name) {
+		MapLayer layer = this.level.getMap().getLayerByName(name);
+		this.drawMapLayer(g2d, layer);
+	}
+	
+	//draw a single layer
+	//this method is not public because that would allow users
+	//to draw random layers that are not part of the level map
+	protected void drawMapLayer(Graphics2D g2d, MapLayer layer) {		
+		Map map = this.level.getMap();
+		MapLayer base = map.getBaseLayer();
+		Tileset tileset = map.getTileData().getTileset();
+		int tile_width, tile_height;
+		int cam_x, cam_y;
+		
+		tile_width = map.getTileData().getTileWidth();
+		tile_height = map.getTileData().getTileHeight();
+		
+		//cam position is relative to the base layer;
+		//if other layers have different dimensions than 
+		//the base layer, then cam position for that layer
+		//must be calculated
+		
+		//cam position is the same if it's the base layer
+		if (layer.getName().equals(base.getName())) {
+			cam_x = this.cam_x;
+			cam_y = this.cam_y;
+		}
+		else {
+			//treat camera position as a ratio relative to the layer dimensions
+			double cam_x_ratio = this.cam_x/(base.getWidth()*tile_width);
+			cam_x = (int)Math.floor(cam_x_ratio * (layer.getWidth()*tile_width));
+			
+			double cam_y_ratio = this.cam_y/(base.getHeight()*tile_height);
+			cam_y = (int)Math.floor(cam_y_ratio * (layer.getHeight()*tile_height));
+		}
+		
+		int offset_width, offset_height; //offset of camera dimension relative to tile dimensions
+		int offset_x, offset_y; //offset of camera position relative to tile dimensions
+		int tile_x, tile_y; //number of tiles to be drawn for each axis;
+		
+		offset_width = this.cam_width - (int)(Math.floor(this.cam_width/tile_width)*tile_width);
+		offset_height = this.cam_height - (int)(Math.floor(this.cam_height/tile_height)*tile_height);
+		
+		offset_x = cam_x - (int)(Math.floor(cam_x/tile_width)*tile_width);
+		offset_y = cam_y - (int)(Math.floor(cam_y/tile_height)*tile_height);
+		
+		//if the cam position offset is greater than the cam dimension offset,
+		//the camera must draw one extra tile
+		tile_x = (offset_x <= offset_width) ? (int)(Math.ceil(this.cam_width/tile_width))
+				: ((int)Math.ceil(this.cam_width/tile_width))+1;
+		tile_y = (offset_y <= offset_height) ? (int)(Math.ceil(this.cam_height/tile_height))
+				: ((int)Math.ceil(this.cam_height/tile_height))+1;
+		
+		//finally, draw the visible tiles
+		int tile_num, pos_x, pos_y;
+		for (int y=0; y < tile_y; y++) {
+			for (int x=0; x < tile_x; x++) {
+				tile_num = layer.getPointData(x, y);
+				pos_x = this.pos_x - offset_x + (x*tile_width);
+				pos_y = this.pos_y - offset_y + (y*tile_height);
+				tileset.draw(g2d, tile_num, pos_x, pos_y);
+			}
+		}
+	}
+	
+	//draw everything
+	public void draw(Graphics2D g2d) {
+		this.setClipRect(g2d);
+		//this.drawBackground(g2d, Color.WHITE);
+		//this.drawEntityOutlines(g2d, Color.RED);
+		this.drawMapBackground(g2d);
+		this.drawEntities(g2d);
+		this.drawMapForeground(g2d);
+		g2d.setClip(null);
+	}
+	
+	//focuses the camera to a specific Entity
+	public void focusTo(int entity_id) {
+		Entity e = this.level.getEntityById(entity_id);
+		int cam_x = (int)(e.getPosX() - (this.cam_width/2));
+		int cam_y = (int)(e.getPosY() - (this.cam_height/2));
+		this.setCamPosition(cam_x, cam_y);
 	}
 }

@@ -50,6 +50,8 @@ final class MapLayer {
 		return this.data[0].length;
 	}
 	
+	//set the dimensions of the layer
+	//warning: THIS DOES NOT PRESERVE EXISTING DATA!
 	public void setDimensions(int width, int height, int fill) {
 		this.data = new int[width][height];
 		this.fillData(fill);
@@ -59,6 +61,7 @@ final class MapLayer {
 		this.setDimensions(width, height, 0);
 	}
 	
+	//return the index at a specific point
 	public int getPointData(int x, int y) {
 		if (x < 0 || x > this.data.length || y < 0 || y > this.data[0].length) {
 			throw new IllegalArgumentException("MapLayer: Invalid map layer coordinate");
@@ -104,15 +107,20 @@ public class Map {
 	//which would break the map data
 	protected TileData tile_data;
 	
-	public Map(TileData t, int width, int height) {
+	protected Map(TileData t) {
 		this.tile_data = t;
+		this.layers = new ArrayList<MapLayer>();
+	}
+	
+	public Map(TileData t, int width, int height) {
+		this(t);
 		//the base layer has an order value of -2 not -1 so that
 		//an extra overlay layer can be put above it and below the object layer
 		this.addLayer("base", width, height, -2);
 	}
 	
 	public Map(TileData t, int[][] data) {
-		this.tile_data = t;
+		this(t);
 		//the base layer has an order value of -2 not -1 so that
 		//an extra overlay layer can be put above it and below the object layer
 		this.addLayer("base", data, -2);
@@ -143,18 +151,33 @@ public class Map {
 	}
 	
 	protected MapLayer getLayerByName(String name) {
-		for (MapLayer layer : this.layers) {
-			if (layer.getName().equals(name)) {
-				return layer;
+		for (int i=0; i < this.layers.size(); i++) {
+			if (this.layers.get(i).getName().equals(name)) {
+				return this.layers.get(i);
 			}
 		}
 		//if we have reached this far, then no layer with that name exists
 		return null;
 	}
 	
+	public boolean layerExists(String name) {
+		for (int i=0; i < this.layers.size(); i++) {
+			if (this.layers.get(i).getName().equals(name)) {
+				return true;
+			}
+		}
+		//if we have reached this far, then no layer with that name exists
+		return false;
+	}
+	
 	public MapLayer getBaseLayer() {
 		return this.getLayerByName("base");
 	}
+	
+	public ArrayList<MapLayer> getLayerList() {
+		return this.layers;
+	}
+	
 	
 	//internal method; inserts a layer in the list according to its order value
 	//the lower the order value, the higher a layer is on the list (with 0 being the highest)
@@ -181,6 +204,9 @@ public class Map {
 		if (this.getLayerByName(name) != null) {
 			throw new IllegalArgumentException("Map: A layer with that name already exists");
 		}
+		if (order == 0) {
+			throw new IllegalArgumentException("Map: Order value of 0 is reserved for Entities");
+		}
 		
 		MapLayer layer = new MapLayer(name, width, height, order);
 		this.insertLayer(layer);
@@ -195,6 +221,10 @@ public class Map {
 		if (this.isValidMap(data) == false) {
 			throw new IllegalArgumentException("Map: Data contains invalid tile template indices");
 		}
+		if (order == 0) {
+			throw new IllegalArgumentException("Map: Order value of 0 is reserved for Entities");
+		}
+		
 		MapLayer layer = new MapLayer(name, data, order);
 		this.insertLayer(layer);
 	}
@@ -214,6 +244,9 @@ public class Map {
 		MapLayer layer = this.getLayerByName(name);
 		if (layer == null) {
 			throw new IllegalArgumentException("Map: Invalid layer name");
+		}
+		if (order == 0) {
+			throw new IllegalArgumentException("Map: Order value of 0 is reserved for Entities");
 		}
 		
 		//remove and insert the layer again with the new order value
