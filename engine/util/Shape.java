@@ -1,7 +1,9 @@
 package engine.util;
 
-//Abstract class shape
-//Inherited by Rectangle and Polygon
+/*
+ * Abstract class shape
+ * Inherited by Rectangle and Polygon
+ */
 public abstract class Shape {
 	protected double pos_x, pos_y, scale, rotation;
 	

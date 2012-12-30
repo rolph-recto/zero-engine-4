@@ -7,6 +7,10 @@ import java.util.*;
 
 import engine.util.Listener;
 
+/*
+ * Controller class
+ * Manipulates Entities
+ */
 public abstract class Controller implements Listener {
 	protected long id;
 	protected Level level; //level in which the controller belongs

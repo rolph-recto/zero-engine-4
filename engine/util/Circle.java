@@ -1,5 +1,9 @@
 package engine.util;
 
+/*
+ * Circle class
+ * Represents a circle shape
+ */
 public class Circle extends Shape {
 	public Circle(double radius, double pos_x, double pos_y) {
 		super(pos_x, pos_y);

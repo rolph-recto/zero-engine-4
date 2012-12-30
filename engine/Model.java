@@ -4,6 +4,10 @@ import java.awt.image.BufferedImage;
 
 import engine.util.*;
 
+/*
+ * Model class
+ * Graphical representation of an Entity
+ */
 public class Model {
 	private final Shape shape;
 	private final Sprite sprite;

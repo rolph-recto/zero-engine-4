@@ -1,5 +1,9 @@
 package engine.util;
 
+/*
+ * Projection class
+ * Represents the projection of a shape along an axis
+ */
 public class Projection {
 	private double min, max;
 	

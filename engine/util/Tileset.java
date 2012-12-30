@@ -8,6 +8,10 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+/*
+ * Tileset class
+ * Divides an image into a grid of tiles
+ */
 public class Tileset {
 	protected String name;
 	protected BufferedImage image;
@@ -38,6 +42,26 @@ public class Tileset {
 		this.name = name;
 	}
 	
+	public int getRows() {
+		return this.rows;
+	}
+	
+	public int getColumns() {
+		return this.columns;
+	}
+	
+	public int getNumTiles() {
+		return this.rows*this.columns;
+	}
+	
+	public int getTileWidth() { 
+		return this.tile_width;
+	}
+	
+	public int getTileHeight() {
+		return this.tile_height;
+	}
+	
 	//create a new tileset from a new image
 	public void create(BufferedImage image, int tw, int th) {
 		if (image.getWidth()%tw != 0 || image.getHeight()%th != 0) {
@@ -51,6 +75,7 @@ public class Tileset {
 		this.columns = (int)(image.getWidth()/this.tile_width);
 	}
 	
+	//create tileset from URL path
 	public void create(URL input, int tw, int th)
 	throws IOException {
         //convert input stream to image
@@ -58,6 +83,7 @@ public class Tileset {
         this.create(image, tw, th);
 	}
 	
+	//create tileset from input stream
 	public void create(InputStream input, int tw, int th)
 	throws IOException {
         //convert input stream to image
@@ -65,6 +91,7 @@ public class Tileset {
         this.create(image, tw, th);
 	}
 	
+	//draw a tile
 	public void draw(Graphics2D g2d, int tile_num, int pos_x, int pos_y) {
 		if (tile_num < 0 || tile_num >= rows*columns) {
 			throw new IllegalArgumentException("Tileset: Tile index is invalid");

@@ -112,6 +112,7 @@ public class Polygon extends Shape {
 		return new Projection(min, max);
 	}
 	
+	//Separating axes for a polygon are its normal vectors
 	protected Vector2D[] getSeparatingAxes(Shape s) {
 		return this.getNormalVectors();
 	}
