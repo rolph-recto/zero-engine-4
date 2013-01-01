@@ -285,18 +285,20 @@ public class View {
 		
 		//if the cam position offset is greater than the cam dimension offset,
 		//the camera must draw one extra tile
-		tile_x = (offset_x <= offset_width) ? (int)(Math.ceil(this.cam_width/tile_width))
+		tile_x = (offset_width == 0) ? (int)(Math.ceil(this.cam_width/tile_width))
 				: ((int)Math.ceil(this.cam_width/tile_width))+1;
-		tile_y = (offset_y <= offset_height) ? (int)(Math.ceil(this.cam_height/tile_height))
+		tile_x = (offset_x <= offset_width) ? tile_x : tile_x+1;
+		tile_y = (offset_height == 0) ? (int)(Math.ceil(this.cam_height/tile_height))
 				: ((int)Math.ceil(this.cam_height/tile_height))+1;
+		tile_y = (offset_y <= offset_height) ? tile_y : tile_y+1;
 		
 		int start_x, start_y; //initial tile position to draw
 		start_x = (int)Math.floor(cam_x/tile_width);
 		start_y = (int)Math.floor(cam_y/tile_height);
 		
 		//make sure we don't draw out of bounds
-		//tile_x = (start_x+tile_x < layer.getWidth()) ? tile_x : layer.getWidth()-start_x;
-		//tile_y = (start_y+tile_y < layer.getHeight()) ? tile_y : layer.getHeight()-start_y;
+		tile_x = (start_x+tile_x < layer.getWidth()) ? tile_x : layer.getWidth()-start_x;
+		tile_y = (start_y+tile_y < layer.getHeight()) ? tile_y : layer.getHeight()-start_y;
 		
 		//finally, draw the visible tiles
 		int tile_num, pos_x, pos_y;

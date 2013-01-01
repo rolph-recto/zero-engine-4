@@ -2,8 +2,12 @@ package engine.util;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
@@ -13,33 +17,28 @@ import javax.imageio.ImageIO;
  * Divides an image into a grid of tiles
  */
 public class Tileset {
-	protected String name;
 	protected BufferedImage image;
 	protected int tile_width, tile_height;
 	protected int rows, columns;
 	
-	public Tileset(String name, BufferedImage image, int tw, int th) {
-		this.setName(name);
+	public Tileset(BufferedImage image, int tw, int th) {
 		this.create(image, tw, th);
 	}
 	
-	public Tileset(String name, URL input, int tw, int th) throws IOException {
-		this.setName(name);
+	public Tileset(URL input, int tw, int th) throws IOException {
 		this.create(input, tw, th);
 	}
 	
-	
-	public Tileset(String name, InputStream input, int tw, int th) throws IOException {
-		this.setName(name);
+	public Tileset(InputStream input, int tw, int th) throws IOException {
 		this.create(input, tw, th);
 	}
 	
-	public String getName() {
-		return this.name;
+	public Tileset(String file) throws IOException {
+		this.load(file);
 	}
 	
-	public void setName(String name) {
-		this.name = name;
+	public Tileset(InputStream input) throws IOException {
+		this.load(input);
 	}
 	
 	public int getRows() {
@@ -115,5 +114,56 @@ public class Tileset {
 		sy2 = sy1+this.tile_height;
 		
 		g2d.drawImage(this.image, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null);
+	}
+	
+    
+    //save sprite object to a stream
+    public void save(OutputStream out) throws IOException {
+    	out.write(this.tile_width);
+    	out.write(this.tile_height);
+    	
+    	ImageIO.write(this.image, "png", out);
+    }
+    
+    //save sprite object to a file
+	public void save(String file) throws FileNotFoundException, IOException {
+    	FileOutputStream out = new FileOutputStream(file);
+    	try {
+	    	this.save(out);
+    	}
+    	catch (IOException e) {
+    		out.close();
+    		throw e;
+    	}
+    	finally {
+	    	out.close();
+    	}
+    }
+	
+	//load sprite from a stream
+	public void load(InputStream in) throws IOException {
+    	this.tile_width = in.read();
+    	this.tile_height = in.read();
+    	
+		this.image = ImageIO.read(in);
+		
+		this.rows = (int)(image.getHeight()/this.tile_height);
+		this.columns = (int)(image.getWidth()/this.tile_width);
+	}
+	
+	//load the sprite from a file
+	public void load(String file) throws IOException {
+		FileInputStream in = new FileInputStream(file);
+		try {
+			this.load(in);
+		}
+		catch (IOException e) {
+			System.out.println("NOOOo");
+			in.close();
+			throw e;
+		}
+		finally {
+			in.close();
+		}
 	}
 }

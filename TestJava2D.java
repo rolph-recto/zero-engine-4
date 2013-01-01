@@ -9,6 +9,7 @@ import java.awt.color.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -77,11 +78,13 @@ class PlayerType implements EntityType {
 		Polygon p = new Polygon(verts);
 		Sprite s = null;
 		try {
-            s=new Sprite("player",
-                    TestJava2D.class.getClassLoader().getResourceAsStream("hero.bmp"),
-                    32,32);
+            s=new Sprite("hero.spr");
 		}
 		catch (IOException e) {}
+		catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		PlayerType.model = new Model((Shape)p, s);
 	}
@@ -146,9 +149,7 @@ public class TestJava2D extends JFrame {
         try {
             this.img = ImageIO.read(this.getClass().getResource("texture.bmp"));
             this.texture_img = new TexturePaint(this.img, new Rectangle(-20, -20, 20, 20));
-            this.tileset = new Tileset("Test",
-            		TestJava2D.class.getClassLoader().getResourceAsStream("tileset.png"),
-            		32, 32);
+            this.tileset = new Tileset("tileset.tls");
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -182,8 +183,8 @@ public class TestJava2D extends JFrame {
         this.map.setPointAtLayer("overlay", 22, 22, 2);
         
         this.level = new Level(this.map, null);
-        this.view = new View(this.level, 640, 416);
-        this.view.setPosition(0, 32);
+        this.view = new View(this.level, 100, 100);
+        this.view.setPosition(32, 32);
         
         this.level.createEntity(PlayerType.instance, 20, 20);
         this.level.createEntity(PlayerType.instance, 100, 100);
@@ -206,7 +207,7 @@ public class TestJava2D extends JFrame {
 	
     public void paint(Graphics g) {
     	BufferStrategy bf = this.getBufferStrategy();
-    	Graphics g2 = null;
+    	Graphics g2;
      
     	try {
     		g2 = bf.getDrawGraphics();
