@@ -1,5 +1,14 @@
 package engine;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import engine.util.Polygon;
 import engine.util.Shape;
 import engine.util.Tileset;
 
@@ -10,9 +19,9 @@ import engine.util.Tileset;
 class TileTemplate {
 	protected String name;
 	protected int index; //index of the image used in Tileset
-	protected Shape shape;
+	protected Polygon shape;
 	
-	public TileTemplate(String name, int index, Shape shape) {
+	public TileTemplate(String name, int index, Polygon shape) {
 		this.name = name;
 		this.index = index;
 		this.shape = shape;
@@ -38,7 +47,7 @@ class TileTemplate {
 		return this.shape;
 	}
 	
-	public void setShape(Shape s) {
+	public void setShape(Polygon s) {
 		this.shape = s;
 	}
 }
@@ -54,6 +63,24 @@ public class TileData {
 	
 	public TileData(Tileset t) {
 		this.setTileset(t);
+	}
+	
+	public TileData(Tileset t, InputStream input) throws IOException {
+		this.setTileset(t);
+		this.loadTemplates(input);
+	}
+	
+	public TileData(Tileset t, String file) throws IOException {
+		this.setTileset(t);
+		this.loadTemplates(file);
+	}
+	
+	public TileData(InputStream input) throws IOException {
+		this.load(input);
+	}
+	
+	public TileData(String file) throws IOException {
+		this.load(file);
 	}
 	
 	public Tileset getTileset() { 
@@ -86,7 +113,7 @@ public class TileData {
 		return this.tile_list[index];
 	}
 	
-	public void addTileTemplate(String name, int index, Shape shape) {
+	public void addTileTemplate(String name, int index, Polygon shape) {
 		if (index < 0 || index >= this.tile_list.length) {
 			throw new IllegalArgumentException("TileData: Invalid index for tile template");
 		}
@@ -99,5 +126,101 @@ public class TileData {
 			throw new IllegalArgumentException("TileData: Number of tile templates do not match number of tiles in tileset");
 		}
 		this.tile_list = tiles;
+	}
+
+	//write tile templates to stream
+	public void saveTemplates(OutputStream out) throws IOException {
+		DataOutputStream data_out = new DataOutputStream(out);
+		data_out.writeInt(this.tile_list.length);
+		for (int i=0; i<this.tile_list.length; i++) {
+			TileTemplate tile = this.tile_list[i];
+			data_out.writeInt(tile.name.length());
+			data_out.writeChars(tile.name);
+			tile.getShape().save(data_out);
+		}
+	}
+
+	//write tileet and tile templates to a stream
+	public void save(OutputStream out) throws IOException {
+		this.saveTemplates(out);
+		this.tileset.save(out);
+	}
+	
+	public void saveTemplates(String file) throws IOException {
+		FileOutputStream in = new FileOutputStream(file);
+		try {
+			this.saveTemplates(in);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		finally {
+			in.close();
+		}
+	}
+	
+	public void save(String file) throws IOException {
+		FileOutputStream in = new FileOutputStream(file);
+		try {
+			this.save(in);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		finally {
+			in.close();
+		}
+	}
+	
+	//load tile templates only
+	public void loadTemplates(InputStream in) throws IOException {
+		DataInputStream data_in = new DataInputStream(in);
+		
+		int num_tiles = data_in.readInt();
+		this.tile_list = new TileTemplate[num_tiles];
+		for (int i=0; i<num_tiles; i++) {
+			int name_len = data_in.readInt();
+			char[] name = new char[name_len];
+			String name_str = "";
+			for (int j=0; j<name_len; j++) {
+				name_str += data_in.readChar();
+			}
+			
+			Polygon shape = new Polygon(data_in);
+			
+			this.tile_list[i] = new TileTemplate(name_str, i, shape);
+		}
+	}
+	
+	//read tileset and tile templates from a stream
+	public void load(InputStream in) throws IOException {
+		this.loadTemplates(in);
+		this.tileset = new Tileset(in);
+	}
+	
+	public void loadTemplates(String file) throws IOException {
+		FileInputStream in = new FileInputStream(file);
+		try {
+			this.loadTemplates(in);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		finally {
+			in.close();
+		}
+	}
+	
+	public void load(String file) throws IOException {
+		FileInputStream in = new FileInputStream(file);
+		try {
+			this.load(in);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		finally {
+			in.close();
+		}
 	}
 }

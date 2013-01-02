@@ -7,6 +7,8 @@ import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -56,37 +58,37 @@ final class AnimationData {
     }
     
     //save animation data
-    public void save(OutputStream out) throws IOException {
-    	out.write(this.frame_width);
-    	out.write(this.frame_height);
-    	out.write(this.max_frames);
-    	out.write(this.max_animations);
-    	out.write(this.animation_list.size());
+    public void save(DataOutputStream data_out) throws IOException {
+    	data_out.writeInt(this.frame_width);
+    	data_out.writeInt(this.frame_height);
+    	data_out.writeInt(this.max_frames);
+    	data_out.writeInt(this.max_animations);
+    	data_out.writeInt(this.animation_list.size());
     	for (Animation anim : this.animation_list) {
-    		out.write(anim.start_frame);
-    		out.write(anim.end_frame);
+    		data_out.writeInt(anim.start_frame);
+    		data_out.writeInt(anim.end_frame);
     	}
     	
-    	ImageIO.write(this.image, "png", out);
+    	ImageIO.write(this.image, "png", data_out);
     }
     
     //load animation data
-    public void load(InputStream in) throws IOException {
-    	this.frame_width = in.read();
-    	this.frame_height = in.read();
-    	this.max_frames = in.read();
-    	this.max_animations = in.read();
+    public void load(DataInputStream data_in) throws IOException {
+    	this.frame_width = data_in.readInt();
+    	this.frame_height = data_in.readInt();
+    	this.max_frames = data_in.readInt();
+    	this.max_animations = data_in.readInt();
     	
-    	int anim_size = in.read();
+    	int anim_size = data_in.readInt();
     	this.animation_list.clear();
     	for (int i=0; i<anim_size; i++) {
     		Animation a = new Animation();
-    		a.start_frame = in.read();
-    		a.end_frame = in.read();
+    		a.start_frame = data_in.readInt();
+    		a.end_frame = data_in.readInt();
     		this.animation_list.add(a);
     	}
     	
-    	this.image = ImageIO.read(in);
+    	this.image = ImageIO.read(data_in);
     	
     }
 }
@@ -380,10 +382,11 @@ public class Sprite implements Serializable {
     
     //save sprite object to a stream
     public void save(OutputStream out) throws IOException {
-    	this.animation.save(out);
+    	DataOutputStream data_out = new DataOutputStream(out);
     	
-    	out.write(this.animation_factor);
-    	out.write((int)(this.alpha*255));
+    	this.animation.save(data_out);
+    	data_out.writeInt(this.animation_factor);
+    	data_out.writeDouble(this.alpha);
     }
     
     //save sprite object to a file
@@ -393,7 +396,6 @@ public class Sprite implements Serializable {
 	    	this.save(out);
     	}
     	catch (IOException e) {
-    		out.close();
     		throw e;
     	}
     	finally {
@@ -403,10 +405,11 @@ public class Sprite implements Serializable {
 	
 	//load sprite from a stream
 	public void load(InputStream in) throws IOException {
-		this.animation.load(in);
+		DataInputStream data_in = new DataInputStream(in);
 		
-    	this.animation_factor = in.read();
-    	this.alpha = (double)(in.read())/255.0;
+		this.animation.load(data_in);
+    	this.animation_factor = data_in.readInt();
+    	this.alpha = data_in.readDouble();
 	}
 	
 	//load the sprite from a file
@@ -416,8 +419,6 @@ public class Sprite implements Serializable {
 			this.load(in);
 		}
 		catch (IOException e) {
-			System.out.println("NOOOo");
-			in.close();
 			throw e;
 		}
 		finally {

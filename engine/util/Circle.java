@@ -1,5 +1,10 @@
 package engine.util;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /*
  * Circle class
  * Represents a circle shape
@@ -12,6 +17,11 @@ public class Circle extends Shape {
 	
 	public Circle(double radius) {
 		this(radius, 0.0, 0.0);
+	}
+	
+	public Circle(InputStream in) throws IOException {
+		super();
+		this.load(in);
 	}
 	
 	//treat the scale as the radius, and vice versa!

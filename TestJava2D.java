@@ -10,9 +10,12 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import engine.util.Vector2D;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -155,17 +158,31 @@ public class TestJava2D extends JFrame {
             e.printStackTrace();
         }
         
+        /*
+        Polygon rect = new Polygon( new Vector2D[]{
+        	new Vector2D(-16.0,-16.0),
+        	new Vector2D(16.0,-16.0),
+        	new Vector2D(16.0,16.0),
+        	new Vector2D(-16.0,16.0)});
+		
         this.tile_data = new TileData(this.tileset);
-        this.tile_data.addTileTemplate("0", 0, null);
-        this.tile_data.addTileTemplate("1", 1, null);
-        this.tile_data.addTileTemplate("2", 2, null);
-        this.tile_data.addTileTemplate("3", 3, null);
-        this.tile_data.addTileTemplate("4", 4, null);
-        this.tile_data.addTileTemplate("5", 5, null);
-        this.tile_data.addTileTemplate("6", 6, null);
-        this.tile_data.addTileTemplate("7", 7, null);
-        this.tile_data.addTileTemplate("8", 8, null);
-        this.tile_data.addTileTemplate("9", 9, null);
+        this.tile_data.addTileTemplate("One", 0, rect);
+        this.tile_data.addTileTemplate("Two", 1, rect);
+        this.tile_data.addTileTemplate("Three", 2, rect);
+        this.tile_data.addTileTemplate("Four", 3, rect);
+        this.tile_data.addTileTemplate("Five", 4, rect);
+        this.tile_data.addTileTemplate("Six", 5, rect);
+        this.tile_data.addTileTemplate("Seven", 6, rect);
+        this.tile_data.addTileTemplate("Eight", 7, rect);
+        this.tile_data.addTileTemplate("Nine", 8, rect);
+        this.tile_data.addTileTemplate("Ten", 9, rect);
+        */
+        try {
+        	this.tile_data = new TileData("tiledata.txt");
+        }
+        catch (IOException e) {
+        	System.out.println("ERRAH IO");
+        }
         
         this.map = new Map(this.tile_data, 50, 50);
         this.map.fillLayer("base", 1);

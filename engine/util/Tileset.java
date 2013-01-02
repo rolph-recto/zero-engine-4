@@ -2,6 +2,8 @@ package engine.util;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -116,13 +118,13 @@ public class Tileset {
 		g2d.drawImage(this.image, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null);
 	}
 	
-    
     //save sprite object to a stream
     public void save(OutputStream out) throws IOException {
-    	out.write(this.tile_width);
-    	out.write(this.tile_height);
-    	
-    	ImageIO.write(this.image, "png", out);
+    	DataOutputStream data_out = new DataOutputStream(out);
+
+		data_out.writeInt(this.tile_width);
+		data_out.writeInt(this.tile_height);
+    	ImageIO.write(this.image, "png", data_out); 
     }
     
     //save sprite object to a file
@@ -132,7 +134,6 @@ public class Tileset {
 	    	this.save(out);
     	}
     	catch (IOException e) {
-    		out.close();
     		throw e;
     	}
     	finally {
@@ -142,10 +143,11 @@ public class Tileset {
 	
 	//load sprite from a stream
 	public void load(InputStream in) throws IOException {
-    	this.tile_width = in.read();
-    	this.tile_height = in.read();
-    	
-		this.image = ImageIO.read(in);
+		DataInputStream data_in = new DataInputStream(in);
+		
+		this.tile_width = data_in.readInt();
+		this.tile_height = data_in.readInt();
+		this.image = ImageIO.read(data_in);
 		
 		this.rows = (int)(image.getHeight()/this.tile_height);
 		this.columns = (int)(image.getWidth()/this.tile_width);
@@ -158,8 +160,6 @@ public class Tileset {
 			this.load(in);
 		}
 		catch (IOException e) {
-			System.out.println("NOOOo");
-			in.close();
 			throw e;
 		}
 		finally {

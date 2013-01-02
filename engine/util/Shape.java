@@ -1,5 +1,11 @@
 package engine.util;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /*
  * Abstract class shape
  * Inherited by Rectangle and Polygon
@@ -120,4 +126,25 @@ public abstract class Shape {
     }
     
     public abstract Shape clone();
+    
+    //save the shape into a stream
+    //subclasses should override this method if they have more info to write
+    public void save(OutputStream out) throws IOException {
+    	DataOutputStream data_out = new DataOutputStream(out);
+    	
+    	data_out.writeDouble(this.pos_x);
+    	data_out.writeDouble(this.pos_y);
+    	data_out.writeDouble(this.scale);
+    	data_out.writeDouble(this.rotation);
+    }
+    
+    //load shape data from a stream
+    //subclasses should override this method if they have more info to read
+    public void load(InputStream in) throws IOException {
+    	DataInputStream data_out = new DataInputStream(in);
+    	this.pos_x = data_out.readDouble();
+    	this.pos_y = data_out.readDouble();
+    	this.scale = data_out.readDouble();
+    	this.rotation = data_out.readDouble();
+    }
 }

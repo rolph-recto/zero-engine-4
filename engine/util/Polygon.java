@@ -1,5 +1,10 @@
 package engine.util;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 //Polygon class
@@ -29,6 +34,11 @@ public class Polygon extends Shape {
 	
 	public Polygon(Vector2D[] v) {
 		this(v, 0.0, 0.0);
+	}
+	
+	public Polygon(InputStream in) throws IOException {
+		super();
+		this.load(in);
 	}
 	
 	//sets vertices to correct position according to scale, rotation and position
@@ -121,4 +131,33 @@ public class Polygon extends Shape {
 		return new Polygon(this.base_vertices, this.pos_x, this.pos_y);
 	}
 
+	public void save(OutputStream out) throws IOException {
+		super.save(out);
+		
+		DataOutputStream data_out = new DataOutputStream(out);
+		data_out.writeInt(this.base_vertices.length);
+		for (Vector2D vertex : this.base_vertices) {
+			data_out.writeDouble(vertex.getX());
+			data_out.writeDouble(vertex.getY());
+		}
+	}
+	
+	public void load(InputStream in) throws IOException {
+		super.load(in);
+		DataInputStream data_in = new DataInputStream(in);
+		int num_vertex = data_in.readInt();
+		this.base_vertices = new Vector2D[num_vertex];
+		this.vertices = new Vector2D[num_vertex];
+		for (int i=0; i<num_vertex; i++) {
+			double x = data_in.readDouble();
+			double y = data_in.readDouble();
+			this.base_vertices[i] = new Vector2D(x, y);
+			this.vertices[i] = new Vector2D(x, y);
+		}
+		
+		//make sure this.vertices has the right information
+		this.reset();
+	}
+	
+	
 }
