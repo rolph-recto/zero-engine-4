@@ -166,42 +166,51 @@ public class TestJava2D extends JFrame {
         	new Vector2D(-16.0,16.0)});
 		
         this.tile_data = new TileData(this.tileset);
-        this.tile_data.addTileTemplate("One", 0, rect);
-        this.tile_data.addTileTemplate("Two", 1, rect);
-        this.tile_data.addTileTemplate("Three", 2, rect);
-        this.tile_data.addTileTemplate("Four", 3, rect);
-        this.tile_data.addTileTemplate("Five", 4, rect);
-        this.tile_data.addTileTemplate("Six", 5, rect);
-        this.tile_data.addTileTemplate("Seven", 6, rect);
-        this.tile_data.addTileTemplate("Eight", 7, rect);
-        this.tile_data.addTileTemplate("Nine", 8, rect);
-        this.tile_data.addTileTemplate("Ten", 9, rect);
+        this.tile_data.addTileTemplate("One", (short)0, rect);
+        this.tile_data.addTileTemplate("Two", (short)1, rect);
+        this.tile_data.addTileTemplate("Three", (short)2, rect);
+        this.tile_data.addTileTemplate("Four", (short)3, rect);
+        this.tile_data.addTileTemplate("Five", (short)4, rect);
+        this.tile_data.addTileTemplate("Six", (short)5, rect);
+        this.tile_data.addTileTemplate("Seven", (short)6, rect);
+        this.tile_data.addTileTemplate("Eight", (short)7, rect);
+        this.tile_data.addTileTemplate("Nine", (short)8, rect);
+        this.tile_data.addTileTemplate("Ten", (short)9, rect);
         */
         try {
+        	//this.tile_data = new TileData(this.tileset);
+        	//this.tile_data.save("tiledata.txt");
         	this.tile_data = new TileData("tiledata.txt");
         }
         catch (IOException e) {
-        	System.out.println("ERRAH IO");
+        	System.out.println("ERROR IO");
         }
-        
+        /*
         this.map = new Map(this.tile_data, 50, 50);
-        this.map.fillLayer("base", 1);
+        this.map.fillLayer("base", (short)1);
         
         this.map.addLayer("overlay", 50, 50, -1);
-        this.map.setPointAtLayer("overlay", 0, 0, 2);
-        this.map.setPointAtLayer("overlay", 3, 5, 2);
-        this.map.setPointAtLayer("overlay", 3, 5, 2);
-        this.map.setPointAtLayer("overlay", 4, 5, 2);
-        this.map.setPointAtLayer("overlay", 5, 5, 2);
-        this.map.setPointAtLayer("overlay", 6, 5, 2);
-        this.map.setPointAtLayer("overlay", 7, 5, 2);
-        this.map.setPointAtLayer("overlay", 24, 24, 2);
-        this.map.setPointAtLayer("overlay", 23, 23, 2);
-        this.map.setPointAtLayer("overlay", 22, 22, 2);
+        this.map.setPointAtLayer("overlay", 0, 0, (short)2);
+        this.map.setPointAtLayer("overlay", 3, 5, (short)2);
+        this.map.setPointAtLayer("overlay", 3, 5, (short)2);
+        this.map.setPointAtLayer("overlay", 4, 5, (short)2);
+        this.map.setPointAtLayer("overlay", 5, 5, (short)2);
+        this.map.setPointAtLayer("overlay", 6, 5, (short)2);
+        this.map.setPointAtLayer("overlay", 7, 5, (short)2);
+        this.map.setPointAtLayer("overlay", 24, 24, (short)2);
+        this.map.setPointAtLayer("overlay", 23, 23, (short)2);
+        this.map.setPointAtLayer("overlay", 22, 22, (short)2);
+        */
+        try {
+        	//this.map.save("map.txt");
+        	//this.map.load("map.txt");
+        	this.map = new Map(this.tile_data, "map.txt");
+        }
+        catch (IOException e) {}
         
         this.level = new Level(this.map, null);
-        this.view = new View(this.level, 100, 100);
-        this.view.setPosition(32, 32);
+        this.view = new View(this.level, 640, 416);
+        this.view.setPosition(0, 32);
         
         this.level.createEntity(PlayerType.instance, 20, 20);
         this.level.createEntity(PlayerType.instance, 100, 100);
@@ -212,11 +221,11 @@ public class TestJava2D extends JFrame {
 	public void mainLoop() {
 		boolean done = false;
 		while (done == false) {
-			//this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
+			this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
 			this.level.update();
 			this.repaint();
 			try {
-				Thread.sleep(10);
+				Thread.sleep(30);
 			}
 			catch (InterruptedException e) {}
 		}

@@ -253,8 +253,8 @@ public class View {
 		//the base layer, then cam position for that layer
 		//must be calculated
 		
-		//cam position is the same if it's the base layer
-		if (layer.getName().equals(base.getName())) {
+		//cam position is the same if it's the same dimension as the base layer
+		if (layer.getWidth() == base.getWidth() && layer.getHeight() == base.getHeight()) {
 			cam_x = this.cam_x;
 			cam_y = this.cam_y;
 		}

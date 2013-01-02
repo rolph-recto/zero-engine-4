@@ -1,5 +1,12 @@
 package engine;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 /*
@@ -12,7 +19,7 @@ final class MapLayer {
 	//a note about order: the object layer is assumed to have an order value of 0,
 	//so any map layers behind it should have a negative order value
 	//and any layers in front of it should have a positive order value
-	private int[][] data; //2D array of TileTemplate indices
+	private short[][] data; //2D array of TileTemplate indices
 	
 	public MapLayer(String name, int width, int height, int order) {
 		this.name = name;
@@ -20,7 +27,7 @@ final class MapLayer {
 		this.order = order;
 	}
 	
-	public MapLayer(String name, int[][] data, int order) {
+	public MapLayer(String name, short[][] data, int order) {
 		this.name = name;
 		this.data = data;
 		this.order = order;
@@ -52,17 +59,17 @@ final class MapLayer {
 	
 	//set the dimensions of the layer
 	//warning: THIS DOES NOT PRESERVE EXISTING DATA!
-	public void setDimensions(int width, int height, int fill) {
-		this.data = new int[width][height];
+	public void setDimensions(int width, int height, short fill) {
+		this.data = new short[width][height];
 		this.fillData(fill);
 	}
 	
 	public void setDimensions(int width, int height) {
-		this.setDimensions(width, height, 0);
+		this.setDimensions(width, height, (short)0);
 	}
 	
 	//return the index at a specific point
-	public int getPointData(int x, int y) {
+	public short getPointData(int x, int y) {
 		if (x < 0 || x > this.data.length || y < 0 || y > this.data[0].length) {
 			throw new IllegalArgumentException("MapLayer: Invalid map layer coordinate");
 		}
@@ -70,8 +77,12 @@ final class MapLayer {
 		return this.data[x][y];
 	}
 	
+	public short[][] getData() {
+		return this.data;
+	}
+	
 	//set the index of one coordinate point
-	public void setPointData(int x, int y, int index) {
+	public void setPointData(int x, int y, short index) {
 		if (x < 0 || x > this.data.length || y < 0 || y > this.data[0].length) {
 			throw new IllegalArgumentException("MapLayer: Invalid map layer coordinate");
 		}
@@ -80,12 +91,12 @@ final class MapLayer {
 	}
 	
 	//set the entire data array
-	public void setData(int[][] map) {
+	public void setData(short[][] map) {
 		this.data = map;
 	}
 	
 	//set all indices of the layer to a certain index
-	public void fillData(int index) {
+	public void fillData(short index) {
 		for (int x=0; x < this.data.length; x++) {
 			for (int y=0; y < this.data[x].length; y++) {
 				this.data[x][y] = index;
@@ -119,11 +130,21 @@ public class Map {
 		this.addLayer("base", width, height, -2);
 	}
 	
-	public Map(TileData t, int[][] data) {
+	public Map(TileData t, short[][] data) {
 		this(t);
 		//the base layer has an order value of -2 not -1 so that
 		//an extra overlay layer can be put above it and below the object layer
 		this.addLayer("base", data, -2);
+	}
+	
+	public Map(TileData t, InputStream in) throws IOException {
+		this(t);
+		this.load(in);
+	}
+	
+	public Map(TileData t, String file) throws IOException {
+		this(t);
+		this.load(file);
 	}
 	
 	public TileData getTileData() {
@@ -136,7 +157,7 @@ public class Map {
 	}
 	
 	//check if a 2D array contains all valid tile template indices
-	public boolean isValidMap(int[][] data) {
+	public boolean isValidMap(short[][] data) {
 		for (int x=0; x < data.length; x++) {
 			for (int y=0; y < data[x].length; y++) {
 				int index = data[x][y];
@@ -199,7 +220,7 @@ public class Map {
 	}
 
 	//add a new layer to the map
-	public void addLayer(String name, int width, int height, int fill, int order) {
+	public void addLayer(String name, int width, int height, short fill, int order) {
 		//check if a layer with the same name already exists
 		if (this.getLayerByName(name) != null) {
 			throw new IllegalArgumentException("Map: A layer with that name already exists");
@@ -214,10 +235,10 @@ public class Map {
 	}
 	
 	public void addLayer(String name, int width, int height, int order) {
-		this.addLayer(name, width, height, 0, order);
+		this.addLayer(name, width, height, (short)0, order);
 	}
 	
-	public void addLayer(String name, int[][] data, int order) {
+	public void addLayer(String name, short[][] data, int order) {
 		//check if a layer with the same name already exists
 		if (this.getLayerByName(name) != null) {
 			throw new IllegalArgumentException("Map: A layer with that name already exists");
@@ -264,7 +285,7 @@ public class Map {
 	}
 	
 	//set an tile template index at a specific point of a layer
-	public void setPointAtLayer(String name, int x, int y, int index) {
+	public void setPointAtLayer(String name, int x, int y, short index) {
 		MapLayer layer = this.getLayerByName(name);
 		if (layer == null) {
 			throw new IllegalArgumentException("Map: Invalid layer name");
@@ -274,7 +295,7 @@ public class Map {
 	}
 	
 	//fill a layer with a specific time template index
-	public void fillLayer(String name, int fill) {
+	public void fillLayer(String name, short fill) {
 		if (this.isValidIndex(fill) == false) {
 			throw new IllegalArgumentException("Map: Invalid tile template index");
 		}
@@ -285,5 +306,88 @@ public class Map {
 		}
 		
 		layer.fillData(fill);
+	}
+	
+	//save map to a stream
+	public void save(OutputStream out) throws IOException {
+		DataOutputStream data_out = new DataOutputStream(out);
+		
+		data_out.writeInt(this.layers.size());
+		for (MapLayer layer : this.layers) {
+			String name = layer.getName();
+			int order = layer.getOrder();
+			short[][] data = layer.getData();
+			
+			data_out.writeInt(name.length());
+			data_out.writeChars(name);
+			data_out.writeInt(order);
+			data_out.writeInt(data.length);
+			data_out.writeInt(data[0].length);
+			for (int x=0; x<data.length; x++) {
+				for (int y=0; y<data[x].length; y++) {
+					data_out.writeShort(data[x][y]);
+				}
+			}
+		}
+	}
+	
+	//save map to a file
+	public void save(String file) throws IOException {
+		FileOutputStream in = new FileOutputStream(file);
+		try {
+			this.save(in);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		finally {
+			in.close();
+		}
+	}
+	
+	//load map from a stream
+	public void load(InputStream in) throws IOException {
+		DataInputStream data_in = new DataInputStream(in);
+		
+		int num_layers = data_in.readInt();
+		this.layers.clear();
+		//layers
+		for (int i=0; i<num_layers; i++) {
+			//name
+			String name = "";
+			int name_len = data_in.readInt();
+			for (int j=0; j<name_len; j++) {
+				name += data_in.readChar();
+			}
+			
+			//order
+			int order = data_in.readInt();
+			
+			//map data
+			int width = data_in.readInt();
+			int height = data_in.readInt();
+			short[][] data = new short[width][height];
+			for (int x=0; x<width; x++) {
+				for (int y=0; y<height; y++) {
+					data[x][y] = data_in.readShort();
+				}
+			}
+			
+			MapLayer layer = new MapLayer(name, data, order);
+			this.layers.add(layer);
+		}
+	}
+	
+	public void load(String file) throws IOException {
+		FileInputStream in = new FileInputStream(file);
+		try {
+			this.load(in);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		finally {
+			in.close();
+		}
 	}
 }

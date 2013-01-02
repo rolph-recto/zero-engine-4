@@ -18,10 +18,10 @@ import engine.util.Tileset;
  */
 class TileTemplate {
 	protected String name;
-	protected int index; //index of the image used in Tileset
+	protected short index; //index of the image used in Tileset
 	protected Polygon shape;
 	
-	public TileTemplate(String name, int index, Polygon shape) {
+	public TileTemplate(String name, short index, Polygon shape) {
 		this.name = name;
 		this.index = index;
 		this.shape = shape;
@@ -35,11 +35,11 @@ class TileTemplate {
 		this.name = name;
 	}
 
-	public int getIndex() {
+	public short getIndex() {
 		return this.index;
 	}
 
-	public void setIndex(int index) {
+	public void setIndex(short index) {
 		this.index = index;
 	}
 	
@@ -113,7 +113,7 @@ public class TileData {
 		return this.tile_list[index];
 	}
 	
-	public void addTileTemplate(String name, int index, Polygon shape) {
+	public void addTileTemplate(String name, short index, Polygon shape) {
 		if (index < 0 || index >= this.tile_list.length) {
 			throw new IllegalArgumentException("TileData: Invalid index for tile template");
 		}
@@ -140,7 +140,7 @@ public class TileData {
 		}
 	}
 
-	//write tileet and tile templates to a stream
+	//write tileset and tile templates to a stream
 	public void save(OutputStream out) throws IOException {
 		this.saveTemplates(out);
 		this.tileset.save(out);
@@ -178,7 +178,7 @@ public class TileData {
 		
 		int num_tiles = data_in.readInt();
 		this.tile_list = new TileTemplate[num_tiles];
-		for (int i=0; i<num_tiles; i++) {
+		for (short i=0; i<num_tiles; i++) {
 			int name_len = data_in.readInt();
 			char[] name = new char[name_len];
 			String name_str = "";
