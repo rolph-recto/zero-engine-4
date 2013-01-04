@@ -16,22 +16,22 @@ public abstract class Controller implements Listener {
 	protected Level level; //level in which the controller belongs
 	protected ArrayList<Entity> entity_list;
 	
-	protected Controller() {
+	public Controller() {
 		this.entity_list = new ArrayList<Entity> ();
 	}
 	
-	protected Controller(long id, Level l) {
+	public Controller(long id, Level l) {
 		this();
 		this.setId(id);
 		this.setLevel(l);
 	}
 	
-	protected Controller(long id, Level l, Entity e) {
+	public Controller(long id, Level l, Entity e) {
 		this(id, l);
 		this.addEntity(e);
 	}
 	
-	protected Controller(Level l, Entity e) {
+	public Controller(Level l, Entity e) {
 		this.setLevel(l);
 		this.addEntity(e);
 	}

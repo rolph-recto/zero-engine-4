@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.util.Timer;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -83,8 +84,8 @@ class PlayerType implements EntityType {
 		return "player";
 	}
 	
-	public Class<? extends Controller> getControllerClass() {
-		return PlayerController.class;
+	public Controller createController() {
+		return new PlayerController();
 	}
 	
 	public Entity createEntity() {
@@ -251,7 +252,7 @@ public class TestJava2D extends JFrame {
 			this.level.update();
 			this.repaint();
 			try {
-				Thread.sleep(30);
+				Thread.sleep(0);
 			}
 			catch (InterruptedException e) {}
 		}

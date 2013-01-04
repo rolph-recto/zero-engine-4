@@ -9,6 +9,7 @@ import engine.util.*;
 public class NullEntityType implements EntityType {
 	public static final NullEntityType instance = new NullEntityType();
 	private static Model model;
+	private static NullController controller = new NullController();
 	
 	//set the constructor to private so an instance of NullEntityType can't be created
 	private NullEntityType() {
@@ -21,12 +22,8 @@ public class NullEntityType implements EntityType {
 		return "NullEntityType";
 	}
 	
-	public Class<? extends Controller> getControllerClass() {
-		return NullController.class;
-	}
-	
-	public boolean isHivemind() {
-		return true;
+	public Controller createController() {
+		return NullEntityType.controller;
 	}
 	
 	//returns a plain Entity

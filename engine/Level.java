@@ -112,34 +112,10 @@ public class Level extends Dispatcher implements Listener {
 		e.setDynamic(type.isDynamic());
 		e.setFriction(type.getFriction());
 		
-		//Create controller
-		//If EntityType is hivemind,
-		//see if a controller for the type already exists
-		boolean create_controller = true;
-		if (type.isHivemind()) {
-			for (Controller c : this.ctrl_list) {
-				if (type.getControllerClass().isInstance(c)) {
-					c.addEntity(e);
-					create_controller = false;
-					break;
-				}
-			}
-		}
-		//create a new controller for the entity
-		if (create_controller) {
-			Controller c;
-			try {
-				Constructor construct = type.getControllerClass().getConstructor();
-				construct.setAccessible(true);
-				c = (Controller)construct.newInstance();
-				c.addEntity(e);
-				this.insertController(c);
-			}
-			//don't create the entity if there are any exceptions whatsoever
-			catch (Exception ex) {
-				throw new RuntimeException("Level: Failed to create controller for entity");
-			}
-		}
+		Controller ctrl = type.createController();
+		ctrl.addEntity(e);
+		ctrl.setLevel(this);
+		this.insertController(ctrl);
 		
 		//insert the entity only if the controller was created successfully;
 		//that's why this line is all the way at the bottom

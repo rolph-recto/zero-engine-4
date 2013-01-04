@@ -14,8 +14,13 @@ import java.util.*;
  */
 public interface EntityType {
 	public abstract String getName();
-	public abstract Class<? extends Controller> getControllerClass();
-	public abstract boolean isHivemind();
+	
+	//controller
+	public abstract Controller createController();
+	//NOTE:
+	//if the controller is "hivemind" (i.e., one controller for many entities)
+	//the subclass should implement that by
+	//having an isntance of the controller as a static class member
 	
 	//creates an entity
 	//subclasses override this method to create
@@ -23,7 +28,6 @@ public interface EntityType {
 	public abstract Entity createEntity();
 	
 	//entity properties
-	
 	//is the entity dynamic (i.e., can it move?)
 	public abstract boolean isDynamic();
 	//constant of friction

@@ -10,7 +10,10 @@ import engine.util.*;
  * As the name implies, this controller does nothing.
  */
 public class NullController extends Controller {
-	public static int priority = 0; //controllers with higher priority are updated first
+	public NullController() {
+		super();
+	}
+	
 	public NullController(long id, Level l) {
 		super(id, l);
 	}
@@ -18,7 +21,7 @@ public class NullController extends Controller {
 	public NullController(long id, Level l, Entity e) {
 		super(id, l, e);
 	}
-	
+
 	//Do nothing when the controller gets a message
 	public void onMessage(Message msg) {}
 }
