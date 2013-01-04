@@ -1,29 +1,36 @@
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
-import java.awt.Toolkit;
-import java.awt.color.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import engine.util.Vector2D;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.JFrame;
 
-import engine.*;
+import org.xml.sax.SAXException;
+
+import engine.Controller;
+import engine.Entity;
+import engine.EntityType;
+import engine.Level;
+import engine.Map;
+import engine.Model;
+import engine.MsgType;
+import engine.ResourceDB;
+import engine.TileData;
+import engine.View;
 import engine.msgtype.EntityMoveMessage;
-import engine.util.*;
-
+import engine.util.Message;
+import engine.util.Polygon;
+import engine.util.Shape;
+import engine.util.Sprite;
+import engine.util.Tileset;
+import engine.util.Vector2D;
 
 class Player extends Entity {
 	public Player() {}
@@ -69,31 +76,11 @@ class PlayerController extends Controller {
 
 class PlayerType implements EntityType {
 	public static final PlayerType instance = new PlayerType();
-	private static Model model;
 
-	private PlayerType() {
-		Vector2D[] verts = new Vector2D[] {
-			new Vector2D(-10.0, -10.0), 
-			new Vector2D(10.0, -10.0), 
-			new Vector2D(10.0, 10.0), 
-			new Vector2D(-10.0, 10.0) 
-		};
-		Polygon p = new Polygon(verts);
-		Sprite s = null;
-		try {
-            s=new Sprite("hero.spr");
-		}
-		catch (IOException e) {}
-		catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		PlayerType.model = new Model((Shape)p, s);
-	}
+	private PlayerType() {}
 	
 	public String getName() {
-		return "PlayerType";
+		return "player";
 	}
 	
 	public Class<? extends Controller> getControllerClass() {
@@ -106,10 +93,6 @@ class PlayerType implements EntityType {
 	
 	public boolean isHivemind() {
 		return false;
-	}
-	
-	public Model getModel() {
-		return PlayerType.model;
 	}
 	
 	public boolean isDynamic() {
@@ -149,14 +132,30 @@ public class TestJava2D extends JFrame {
 		this.setVisible(true);
         this.createBufferStrategy(2);
 		
+		ResourceDB db = new ResourceDB();
+		try {
+			db.loadResources("resource.xml");
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+		db.addEntityType("player", PlayerType.instance);
+		
+		/*
         try {
-            this.img = ImageIO.read(this.getClass().getResource("texture.bmp"));
-            this.texture_img = new TexturePaint(this.img, new Rectangle(-20, -20, 20, 20));
             this.tileset = new Tileset("tileset.tls");
         }
         catch (IOException e) {
             e.printStackTrace();
         }
+        */
         
         /*
         Polygon rect = new Polygon( new Vector2D[]{
@@ -177,14 +176,16 @@ public class TestJava2D extends JFrame {
         this.tile_data.addTileTemplate("Nine", (short)8, rect);
         this.tile_data.addTileTemplate("Ten", (short)9, rect);
         */
+		
+		/*
         try {
-        	//this.tile_data = new TileData(this.tileset);
-        	//this.tile_data.save("tiledata.txt");
         	this.tile_data = new TileData("tiledata.txt");
         }
         catch (IOException e) {
         	System.out.println("ERROR IO");
         }
+        */
+        
         /*
         this.map = new Map(this.tile_data, 50, 50);
         this.map.fillLayer("base", (short)1);
@@ -204,16 +205,41 @@ public class TestJava2D extends JFrame {
         try {
         	//this.map.save("map.txt");
         	//this.map.load("map.txt");
-        	this.map = new Map(this.tile_data, "map.txt");
+        	this.map = new Map(db.getTileData("tiledata"), "map.txt");
         }
         catch (IOException e) {}
         
-        this.level = new Level(this.map, null);
+        /*
+		Vector2D[] verts = new Vector2D[] {
+				new Vector2D(-10.0, -10.0), 
+				new Vector2D(10.0, -10.0), 
+				new Vector2D(10.0, 10.0), 
+				new Vector2D(-10.0, 10.0) 
+		};
+		Polygon p = new Polygon(verts);
+		Sprite s = null;
+		try {
+            s=new Sprite("hero.spr");
+		}
+		catch (IOException e) {}
+		catch (ClassNotFoundException e) {}
+		
+		Model model_player = null;
+		try {
+			model_player = new Model("model.txt");
+		}
+		catch (IOException e) {}
+		catch (ClassNotFoundException e) {}
+		
+		db.addModel("player", model_player);
+		*/
+			
+        this.level = new Level(this.map, db);
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
-        this.level.createEntity(PlayerType.instance, 20, 20);
-        this.level.createEntity(PlayerType.instance, 100, 100);
+        this.level.createEntity("player", 20, 20);
+        this.level.createEntity("player", 100, 100);
         
         this.mainLoop();
 	}

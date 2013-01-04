@@ -84,12 +84,9 @@ public class Level extends Dispatcher implements Listener {
 	
 	//create entity and inserts it into the level
 	//returns object ID
-	public long createEntity(String type_name, double x, double y, double z)  {
+	public long createEntity(String type_name, double x, double y)  {
 		EntityType type = this.resources.getEntityType(type_name);
-		if (type == null) {
-			throw new IllegalArgumentException("Level: No EntityType with name '"+type_name+"' exists in the resource database");
-		}
-		else return this.createEntity(type, x, y);
+		return this.createEntity(type, x, y);
 	}
 
 	//create entity and inserts it into the level
@@ -104,7 +101,8 @@ public class Level extends Dispatcher implements Listener {
 		
 		//create new entity
 		Entity e = type.createEntity();
-		Model model_template = type.getModel();
+		//Model model_template = type.getModel();
+		Model model_template = this.resources.getModel(type.getName());
 		Model model = new Model(model_template.getShape().clone(), model_template.getSprite().clone());
 		e.setType(type);
 		e.setModel(model);
