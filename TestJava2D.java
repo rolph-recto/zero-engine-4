@@ -3,6 +3,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -26,6 +28,7 @@ import engine.ResourceDB;
 import engine.TileData;
 import engine.View;
 import engine.msgtype.EntityMoveMessage;
+import engine.msgtype.LevelMessage;
 import engine.util.Message;
 import engine.util.Polygon;
 import engine.util.Shape;
@@ -64,11 +67,28 @@ class PlayerController extends Controller {
 	}
 	
 	public void onMessage(Message msg) {
-		EntityMoveMessage move_msg;
 		switch (msg.getType()) {
 		case LEVEL_UPDATE:
-			move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, 0.0, 0.0, 1.0);
-			this.player.onMessage(move_msg);
+			LevelMessage level_msg = (LevelMessage)msg;
+			boolean[] key_state = level_msg.getKeyState();
+			EntityMoveMessage move_msg = null;
+			
+			if (key_state[KeyEvent.VK_UP]) {
+				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, 0.0, -1.0, 0.0);				
+			}
+			else if (key_state[KeyEvent.VK_DOWN]) {
+				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, 0.0, 1.0, 0.0);	
+			}
+			if (key_state[KeyEvent.VK_LEFT]) {
+				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, -1.0, 0.0, 0.0);				
+			}
+			else if (key_state[KeyEvent.VK_RIGHT]) {
+				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, 1.0, 0.0, 0.0);	
+			}
+			
+			if (move_msg != null) {
+				this.player.onMessage(move_msg);
+			}
 		default:
 			break;
 		}
@@ -105,7 +125,7 @@ class PlayerType implements EntityType {
 	}
 }
 
-public class TestJava2D extends JFrame {
+public class TestJava2D extends JFrame implements KeyListener {
 	private BufferedImage img;
 	private TexturePaint texture_img;
 	
@@ -114,6 +134,7 @@ public class TestJava2D extends JFrame {
 	private Tileset tileset;
 	private TileData tile_data;
 	private Map map;
+	private boolean[] key_state;
 
 	public TestJava2D() {
 		super();
@@ -132,6 +153,9 @@ public class TestJava2D extends JFrame {
 		this.setSize(640, 480);
 		this.setVisible(true);
         this.createBufferStrategy(2);
+        this.addKeyListener(this);
+        
+        this.key_state = new boolean[525];
 		
 		ResourceDB db = new ResourceDB();
 		try {
@@ -239,8 +263,7 @@ public class TestJava2D extends JFrame {
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
-        this.level.createEntity("player", 20, 20);
-        this.level.createEntity("player", 100, 100);
+        this.level.createEntity("player", "player1", 200, 200);
         
         this.mainLoop();
 	}
@@ -248,8 +271,8 @@ public class TestJava2D extends JFrame {
 	public void mainLoop() {
 		boolean done = false;
 		while (done == false) {
-			this.view.setCamPosition(this.view.getCamX()+1, this.view.getCamY()+1);
-			this.level.update();
+			this.view.focusTo("player1");
+			this.level.update(this.key_state);
 			this.repaint();
 			try {
 				Thread.sleep(0);
@@ -281,4 +304,16 @@ public class TestJava2D extends JFrame {
     public static void main(String[] args) {
     	new TestJava2D();
     }
+    
+    //key event methods
+    
+    public void keyPressed(KeyEvent e) {
+    	this.key_state[e.getKeyCode()] = true;
+    }
+    
+    public void keyReleased(KeyEvent e) {
+    	this.key_state[e.getKeyCode()] = false;
+    }
+
+	public void keyTyped(KeyEvent arg0) {}
 }

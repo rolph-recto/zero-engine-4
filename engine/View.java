@@ -182,13 +182,38 @@ public class View {
 			Shape s = m.getShape();
 			Sprite spr = m.getSprite();
 			
-			transform.setToIdentity();
-			transform.translate(s.getPosX()+this.pos_x-this.cam_x, s.getPosY()+this.pos_y-this.cam_y);
-			transform.rotate(Math.toRadians(s.getRotation()));
-			g2d.setTransform(transform);
+			//check if the object is visible
+			boolean visible = false;
+			//if the entity position is within the bounding box of the camera, it is visible
+			if (e.getPosX() >= this.cam_x && e.getPosX() <= this.cam_x+this.cam_width
+			&& e.getPosY() >= this.cam_y && e.getPosY() <= this.cam_y+this.cam_height) {
+				visible = true;
+			}
+			//if the entity's shape collides with the camera bounding box, it is visible
+			else {
+				double half_width = (double)this.cam_width/2.0;
+				double half_height = (double)this.cam_height/2.0;
+				Polygon view_shape = new Polygon( new Vector2D[] {
+						new Vector2D(-half_width, -half_height),
+						new Vector2D(half_width, -half_height),
+						new Vector2D(half_width, half_height),
+						new Vector2D(-half_width, half_height)
+				});
+				view_shape.setPosition(this.cam_x+half_width, this.cam_y+half_height);
+				if (view_shape.collision(s)) {
+					visible = true;
+				}
+			}
 			
-			spr.setPosition((int)(-spr.getWidth()/2), (int)(-spr.getHeight()/2));
-			spr.draw(g2d);
+			if (visible) {
+				transform.setToIdentity();
+				transform.translate(s.getPosX()+this.pos_x-this.cam_x, s.getPosY()+this.pos_y-this.cam_y);
+				transform.rotate(Math.toRadians(s.getRotation()));
+				g2d.setTransform(transform);
+				
+				spr.setPosition((int)(-spr.getWidth()/2), (int)(-spr.getHeight()/2));
+				spr.draw(g2d);
+			}
 		}
 		
 		transform.setToIdentity();
@@ -323,11 +348,24 @@ public class View {
 		g2d.setClip(null);
 	}
 	
-	//focuses the camera to a specific Entity
-	public void focusTo(int entity_id) {
-		Entity e = this.level.getEntityById(entity_id);
+	//this method is protected so the camera can't focus
+	//to entities that are not in the level
+	protected void focusTo(Entity e) {
+		if (e == null) {
+			throw new IllegalArgumentException("View: Cannot focus on a null entity");
+		}
 		int cam_x = (int)(e.getPosX() - (this.cam_width/2));
 		int cam_y = (int)(e.getPosY() - (this.cam_height/2));
 		this.setCamPosition(cam_x, cam_y);
+	}
+	
+	//focuses the camera to a specific Entity
+	public void focusTo(int entity_id) {
+		this.focusTo(this.level.getEntityById(entity_id));
+	}
+	
+	//focuses the camera to a specific Entity
+	public void focusTo(String entity_name) {
+		this.focusTo(this.level.getEntityByName(entity_name));
 	}
 }

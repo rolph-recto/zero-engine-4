@@ -9,8 +9,9 @@ import engine.util.*;
  */
 public class LevelMessage extends Message {
 	private Level level;
+	private boolean[] key_state;
 	
-	public LevelMessage(MsgType type, Level l) throws IllegalArgumentException {
+	public LevelMessage(MsgType type, Level l, boolean[] key_state) throws IllegalArgumentException {
 		super(type);
 		if (!type.inRange(MsgType.MSG_LEVEL)) {
 			throw new IllegalArgumentException("Message type must be in range MSG_LEVEL");
@@ -24,5 +25,13 @@ public class LevelMessage extends Message {
 	
 	public Level getLevel() {
 		return this.level;
+	}
+	
+	public void setKeyState(boolean[] key) {
+		this.key_state = key;
+	}
+	
+	public boolean[] getKeyState() {
+		return this.key_state;
 	}
 }

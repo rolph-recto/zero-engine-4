@@ -33,7 +33,7 @@ public class Level extends Dispatcher implements Listener {
 		this.entity_id_list = new ArrayList<Long> ();
 		this.ctrl_id = 0;
 		this.ctrl_id_list = new ArrayList<Long> ();
-		this.update_msg = new LevelMessage(MsgType.LEVEL_UPDATE, this);
+		this.update_msg = new LevelMessage(MsgType.LEVEL_UPDATE, this, null);
 	}
 	
 	public Level(Map m, ResourceDB db) {
@@ -92,6 +92,19 @@ public class Level extends Dispatcher implements Listener {
 	//create entity and inserts it into the level
 	//returns object ID
 	public long createEntity(EntityType type, double x, double y) {
+		return this.createEntity(type, "", x, y);
+	}
+	
+	//create entity and inserts it into the level
+	//returns object ID
+	public long createEntity(String type_name, String entity_name, double x, double y)  {
+		EntityType type = this.resources.getEntityType(type_name);
+		return this.createEntity(type, entity_name, x, y);
+	}
+	
+	//create entity and inserts it into the level
+	//returns object ID
+	public long createEntity(EntityType type, String name, double x, double y) {
 		// TODO ADD CODE Validate type (check if it exists in the resource database)
 		
 		//validate position
@@ -109,16 +122,16 @@ public class Level extends Dispatcher implements Listener {
 		e.setPosition(x, y);
 		
 		//set entity properties
+		e.setName(name);
 		e.setDynamic(type.isDynamic());
 		e.setFriction(type.getFriction());
 		
+		//set controller
 		Controller ctrl = type.createController();
 		ctrl.addEntity(e);
 		ctrl.setLevel(this);
 		this.insertController(ctrl);
-		
-		//insert the entity only if the controller was created successfully;
-		//that's why this line is all the way at the bottom
+
 		this.insertEntity(e);
 		
 		//Broadcast message ENTITY_CREATE
@@ -149,6 +162,14 @@ public class Level extends Dispatcher implements Listener {
 	public Entity getEntityById(long id) {
 		for (Entity e : this.entity_list) {
 			if (e.getId() == id) return e;
+		}
+		return null;
+	}
+	
+	//return Entity object from its name
+	public Entity getEntityByName(String name) {
+		for (Entity e : this.entity_list) {
+			if (e.getName().equals(name)) return e;
 		}
 		return null;
 	}
@@ -215,12 +236,15 @@ public class Level extends Dispatcher implements Listener {
 	
 	//update controllers
 	//this method is called each frame
-	public void update() {
+	public void update(boolean[] key_state) {
 		//update physics
 		this.updatePhysics();
 		
 		//check collisions
 		this.checkCollisions();
+		
+		//update keystate
+		this.update_msg.setKeyState(key_state);
 		
 		//broadcast update message to controllers
 		for (Controller c : this.ctrl_list) {
