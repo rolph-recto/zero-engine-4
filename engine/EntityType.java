@@ -30,6 +30,9 @@ public interface EntityType {
 	//entity properties
 	//is the entity dynamic (i.e., can it move?)
 	public abstract boolean isDynamic();
+	//does the entity move fast?
+	//(this turns on ray casting)
+	public abstract boolean isBullet();
 	//constant of friction
 	//this is a value from 1 to 0
 	public abstract double getFriction();

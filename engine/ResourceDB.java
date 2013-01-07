@@ -228,31 +228,38 @@ public final class ResourceDB {
 		public void startElement(String uri, String local_name, String q_name, Attributes atts) {
 			FileSystem fs = FileSystems.getDefault();
 			
+			//load the resource from a file and put it in a hashmap
+			//image resource
 			if (local_name.equalsIgnoreCase("image")) {
 				Path p = fs.getPath("resource", "image", atts.getValue("file"));
 				String name = atts.getValue("name");
 				this.image.put(name, p);
 			}
+			//sound resource
 			else if (local_name.equalsIgnoreCase("sound")) {
 				Path p = fs.getPath("resource", "sound", atts.getValue("file"));
 				String name = atts.getValue("name");
 				this.sound.put(name, p);
 			}
+			//sprite resource
 			else if (local_name.equalsIgnoreCase("sprite")) {
 				Path p = fs.getPath("resource", "sprite", atts.getValue("file"));
 				String name = atts.getValue("name");
 				this.sprite.put(name, p);
 			}
+			//tileset resource
 			else if (local_name.equalsIgnoreCase("tileset")) {
 				Path p = fs.getPath("resource", "tileset", atts.getValue("file"));
 				String name = atts.getValue("name");
 				this.tileset.put(name, p);
 			}
+			//tile data resource
 			else if (local_name.equalsIgnoreCase("tiledata")) {
 				Path p = fs.getPath("resource", "tiledata", atts.getValue("file"));
 				String name = atts.getValue("name");
 				this.tiledata.put(name, p);
 			}
+			//model resource
 			else if (local_name.equalsIgnoreCase("model")) {
 				Path p = fs.getPath("resource", "model", atts.getValue("file"));
 				String name = atts.getValue("name");

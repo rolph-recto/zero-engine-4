@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.MouseInfo;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.event.KeyEvent;
@@ -29,6 +30,7 @@ import engine.TileData;
 import engine.View;
 import engine.msgtype.EntityMoveMessage;
 import engine.msgtype.LevelMessage;
+import engine.util.Circle;
 import engine.util.Message;
 import engine.util.Polygon;
 import engine.util.Shape;
@@ -70,25 +72,47 @@ class PlayerController extends Controller {
 		switch (msg.getType()) {
 		case LEVEL_UPDATE:
 			LevelMessage level_msg = (LevelMessage)msg;
+			
+			//move the player
 			boolean[] key_state = level_msg.getKeyState();
-			EntityMoveMessage move_msg = null;
+			double move_x, move_y;
+			move_x = 0.0;
+			move_y = 0.0;
 			
 			if (key_state[KeyEvent.VK_UP]) {
-				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, 0.0, -1.0, 0.0);				
+				move_y = -5.0;		
 			}
 			else if (key_state[KeyEvent.VK_DOWN]) {
-				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, 0.0, 1.0, 0.0);	
+				move_y = 5.0;
 			}
 			if (key_state[KeyEvent.VK_LEFT]) {
-				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, -1.0, 0.0, 0.0);				
+				move_x = -5.0;			
 			}
 			else if (key_state[KeyEvent.VK_RIGHT]) {
-				move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player, 1.0, 0.0, 0.0);	
+				move_x = 5.0;
 			}
+
+			//change player orientation
+			double move_rot = 0.0;
+			int mouse_x = level_msg.getMouseX();
+			int mouse_y = level_msg.getMouseY();
+			double comp_x = mouse_x - this.player.getPosX();
+			double comp_y = mouse_y - this.player.getPosY();
+			//find unit vector (||v||cos(t)i, ||v||sin(t)jd), solve for theta
+			double magnitude = Math.sqrt(Math.pow(comp_x, 2) + Math.pow(comp_y, 2));
+			double cos = comp_x/magnitude;
+			double angle = Math.toDegrees(Math.acos(cos));
+			if (comp_y > 0) {
+				angle = 360.0 - angle;
+			}
+			angle = (angle >= 360.0) ? 0 : angle;
 			
-			if (move_msg != null) {
-				this.player.onMessage(move_msg);
-			}
+			move_rot = angle - this.player.getRotation();
+			
+			EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player,
+					move_x, move_y, move_rot);				
+			
+			this.player.onMessage(move_msg);
 		default:
 			break;
 		}
@@ -120,6 +144,10 @@ class PlayerType implements EntityType {
 		return true;
 	}
 	
+	public boolean isBullet() {
+		return false;
+	}
+	
 	public double getFriction() {
 		return 0.0;
 	}
@@ -135,6 +163,7 @@ public class TestJava2D extends JFrame implements KeyListener {
 	private TileData tile_data;
 	private Map map;
 	private boolean[] key_state;
+	private Entity player;
 
 	public TestJava2D() {
 		super();
@@ -189,22 +218,22 @@ public class TestJava2D extends JFrame implements KeyListener {
         	new Vector2D(16.0,16.0),
         	new Vector2D(-16.0,16.0)});
 		
-        this.tile_data = new TileData(this.tileset);
-        this.tile_data.addTileTemplate("One", (short)0, rect);
-        this.tile_data.addTileTemplate("Two", (short)1, rect);
-        this.tile_data.addTileTemplate("Three", (short)2, rect);
-        this.tile_data.addTileTemplate("Four", (short)3, rect);
-        this.tile_data.addTileTemplate("Five", (short)4, rect);
-        this.tile_data.addTileTemplate("Six", (short)5, rect);
-        this.tile_data.addTileTemplate("Seven", (short)6, rect);
-        this.tile_data.addTileTemplate("Eight", (short)7, rect);
-        this.tile_data.addTileTemplate("Nine", (short)8, rect);
-        this.tile_data.addTileTemplate("Ten", (short)9, rect);
-        */
+        this.tile_data = new TileData(db.getTileset("tileset"));
+        this.tile_data.addTileTemplate("One", (short)0, rect, true);
+        this.tile_data.addTileTemplate("Two", (short)1, rect, true);
+        this.tile_data.addTileTemplate("Three", (short)2, rect, true);
+        this.tile_data.addTileTemplate("Four", (short)3, rect, false);
+        this.tile_data.addTileTemplate("Five", (short)4, rect, false);
+        this.tile_data.addTileTemplate("Six", (short)5, rect, false);
+        this.tile_data.addTileTemplate("Seven", (short)6, rect, false);
+        this.tile_data.addTileTemplate("Eight", (short)7, rect, false);
+        this.tile_data.addTileTemplate("Nine", (short)8, rect, false);
+        this.tile_data.addTileTemplate("Ten", (short)9, rect, false);
+        
 		
-		/*
         try {
-        	this.tile_data = new TileData("tiledata.txt");
+        	//this.tile_data = new TileData("tiledata.txt");
+        	this.tile_data.save("tiledata.txt");
         }
         catch (IOException e) {
         	System.out.println("ERROR IO");
@@ -231,17 +260,12 @@ public class TestJava2D extends JFrame implements KeyListener {
         	//this.map.save("map.txt");
         	//this.map.load("map.txt");
         	this.map = new Map(db.getTileData("tiledata"), "map.txt");
+        	this.map.setLayerOrder("overlay", 1);
         }
         catch (IOException e) {}
         
         /*
-		Vector2D[] verts = new Vector2D[] {
-				new Vector2D(-10.0, -10.0), 
-				new Vector2D(10.0, -10.0), 
-				new Vector2D(10.0, 10.0), 
-				new Vector2D(-10.0, 10.0) 
-		};
-		Polygon p = new Polygon(verts);
+		Circle c = new Circle(16.0);
 		Sprite s = null;
 		try {
             s=new Sprite("hero.spr");
@@ -249,12 +273,11 @@ public class TestJava2D extends JFrame implements KeyListener {
 		catch (IOException e) {}
 		catch (ClassNotFoundException e) {}
 		
-		Model model_player = null;
+		Model model_player = new Model(c, s);
 		try {
-			model_player = new Model("model.txt");
+			model_player.save("model.txt");
 		}
 		catch (IOException e) {}
-		catch (ClassNotFoundException e) {}
 		
 		db.addModel("player", model_player);
 		*/
@@ -263,7 +286,8 @@ public class TestJava2D extends JFrame implements KeyListener {
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
-        this.level.createEntity("player", "player1", 200, 200);
+        long id = this.level.createEntity("player", "player1", 200, 200);
+        this.player = this.level.getEntityById(id);
         
         this.mainLoop();
 	}
@@ -271,11 +295,18 @@ public class TestJava2D extends JFrame implements KeyListener {
 	public void mainLoop() {
 		boolean done = false;
 		while (done == false) {
+			//get mouse coordinates
+			int mouse_x = (int)MouseInfo.getPointerInfo().getLocation().getX();
+			int mouse_y = (int)MouseInfo.getPointerInfo().getLocation().getY();
+			//change mouse location from screen coords to level coords
+			mouse_x = mouse_x - this.view.getPosX() + this.view.getCamX();
+			mouse_y = mouse_y - this.view.getPosY() + this.view.getCamY();
+
 			this.view.focusTo("player1");
-			this.level.update(this.key_state);
+			this.level.update(this.key_state, mouse_x, mouse_y);
 			this.repaint();
 			try {
-				Thread.sleep(0);
+				Thread.sleep(30);
 			}
 			catch (InterruptedException e) {}
 		}

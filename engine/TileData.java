@@ -16,15 +16,17 @@ import engine.util.Tileset;
  * TileTemplate class
  * Contains info about one type of tile
  */
-class TileTemplate {
-	protected String name;
-	protected short index; //index of the image used in Tileset
-	protected Polygon shape;
+final class TileTemplate {
+	private String name;
+	private short index; //index of the image used in Tileset
+	private Polygon shape;
+	private boolean empty; //can entities pass through this tile without collision?
 	
-	public TileTemplate(String name, short index, Polygon shape) {
+	public TileTemplate(String name, short index, Polygon shape, boolean empty) {
 		this.name = name;
 		this.index = index;
 		this.shape = shape;
+		this.empty = empty;
 	}
 
 	public String getName() {
@@ -49,6 +51,14 @@ class TileTemplate {
 	
 	public void setShape(Polygon s) {
 		this.shape = s;
+	}
+	
+	public boolean isEmpty() {
+		return this.empty;
+	}
+	
+	public void setEmpty(boolean empty) {
+		this.empty = empty;
 	}
 }
 
@@ -113,12 +123,12 @@ public class TileData {
 		return this.tile_list[index];
 	}
 	
-	public void addTileTemplate(String name, short index, Polygon shape) {
+	public void addTileTemplate(String name, short index, Polygon shape, boolean empty) {
 		if (index < 0 || index >= this.tile_list.length) {
 			throw new IllegalArgumentException("TileData: Invalid index for tile template");
 		}
 		
-		this.tile_list[index] = new TileTemplate(name, index, shape);
+		this.tile_list[index] = new TileTemplate(name, index, shape, empty);
 	}
 	
 	public void setTileTemplates(TileTemplate[] tiles) {
@@ -134,9 +144,10 @@ public class TileData {
 		data_out.writeInt(this.tile_list.length);
 		for (int i=0; i<this.tile_list.length; i++) {
 			TileTemplate tile = this.tile_list[i];
-			data_out.writeInt(tile.name.length());
-			data_out.writeChars(tile.name);
+			data_out.writeInt(tile.getName().length());
+			data_out.writeChars(tile.getName());
 			tile.getShape().save(data_out);
+			data_out.writeBoolean(tile.isEmpty());
 		}
 	}
 
@@ -188,7 +199,9 @@ public class TileData {
 			
 			Polygon shape = new Polygon(data_in);
 			
-			this.tile_list[i] = new TileTemplate(name_str, i, shape);
+			boolean empty = data_in.readBoolean();
+			
+			this.tile_list[i] = new TileTemplate(name_str, i, shape, empty);
 		}
 	}
 	

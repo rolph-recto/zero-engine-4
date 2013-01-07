@@ -14,6 +14,7 @@ public class Entity extends Dispatcher implements Listener {
 	protected long id;
 	protected String name;
 	protected Model model;
+	protected double old_pos_x, old_pos_y; //previous position on the entity
 	protected double vel_x, vel_y, vel_rot; //velocities of position and rotation
 	protected double accel_x, accel_y, accel_rot; //velocities of position and rotation
 	protected EntityType type;
@@ -67,15 +68,27 @@ public class Entity extends Dispatcher implements Listener {
 		return this.model.getShape().getPosY();
 	}
 	
+	public double getOldPosX() {
+		return this.old_pos_x;
+	}
+	
+	public double getOldPosY() {
+		return this.old_pos_y;
+	}
+	
 	public void setPosX(double pos_x) {
+		this.old_pos_x = this.getPosX();
 		this.model.getShape().setPosX(pos_x);
 	}
 
 	public void setPosY(double pos_y) {
+		this.old_pos_y = this.getPosY();
 		this.model.getShape().setPosY(pos_y);
 	}
 	
 	public void setPosition(double x, double y) {
+		this.old_pos_x = this.getPosX();
+		this.old_pos_y = this.getPosY();
 		this.model.getShape().setPosition(x, y);
 	}
 

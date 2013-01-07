@@ -42,6 +42,10 @@ public class NullEntityType implements EntityType {
 		return false;
 	}
 	
+	public boolean isBullet() {
+		return false;
+	}
+	
 	public double getFriction() {
 		return 0.0;
 	}

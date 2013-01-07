@@ -10,6 +10,89 @@ import engine.util.*;
 import engine.msgtype.*;
 
 /*
+ * Collision data class
+ * contains maps of entities and tiles used for broad-phase collision detection
+ */
+final class CollisionMap implements Listener {
+	//a map of entities that do not move
+	//each cell has a list of entities
+	//static_map can hold large entities
+	private ArrayList<ArrayList<ArrayList<Entity>>> entity_map;
+	private Level level;
+	
+	public CollisionMap(Level level) {
+		this.level = level;
+		this.initArrays();
+	}
+	
+	private void initArrays() {
+		MapLayer base = this.level.getMap().getBaseLayer();
+		int width = base.getWidth();
+		int height = base.getHeight();
+		
+		this.entity_map = new ArrayList<ArrayList<ArrayList<Entity>>>(width);
+		for (int x=0; x<width; x++) {
+			//set columns
+			this.entity_map.add(new ArrayList<ArrayList<Entity>>(height));
+			
+			//set rows
+			for (int y=0; y<height; y++) {
+				this.entity_map.get(x).add(new ArrayList<Entity>());
+			}
+		}
+	}
+	
+	//add an entity into the map
+	public void addEntity(Entity e) {
+		int tile_width = this.level.getMap().getTileData().getTileWidth();
+		int tile_height = this.level.getMap().getTileData().getTileHeight();
+		int x = (int)(Math.floor(e.getPosX()/tile_width));
+		int y = (int)(Math.floor(e.getPosY()/tile_height));
+		
+		this.entity_map.get(x).get(y).add(e);
+	}
+	
+	//remove an entity from the map
+	public void removeEntity(Entity e) {
+		int tile_width = this.level.getMap().getTileData().getTileWidth();
+		int tile_height = this.level.getMap().getTileData().getTileHeight();
+		int x = (int)(Math.floor(e.getPosX()/tile_width));
+		int y = (int)(Math.floor(e.getPosY()/tile_height));
+		
+		this.entity_map.get(x).get(y).remove(e);
+	}
+
+	public void onMessage(Message msg) {
+		switch(msg.getType()) {
+		case ENTITY_MOVE:
+			//update the object map when an entity moves
+			EntityMoveMessage move_msg = (EntityMoveMessage)msg;
+			Entity e = move_msg.getEntity();
+			int tile_width = this.level.getMap().getTileData().getTileWidth();
+			int tile_height = this.level.getMap().getTileData().getTileHeight();
+			
+			int old_x = (int)(Math.floor(e.getOldPosX()/tile_width));
+			int old_y = (int)(Math.floor(e.getOldPosY()/tile_height));
+			int x = (int)(Math.floor(e.getPosX()/tile_width));
+			int y = (int)(Math.floor(e.getPosY()/tile_height));
+			
+			//only switch if the coords are different
+			if (old_x != x && old_y != y) {
+				this.entity_map.get(old_x).get(old_y).remove(e);
+				this.entity_map.get(old_x).get(old_y).add(e);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	
+	public ArrayList<ArrayList<ArrayList<Entity>>> getEntityMap() {
+		return this.entity_map;
+	}
+}
+
+/*
  * Level class
  * Contains all data of one level
  */
@@ -23,6 +106,7 @@ public class Level extends Dispatcher implements Listener {
 	protected long ctrl_id; //next id to assign if ctrl id list is empty
 	protected ArrayList<Long> ctrl_id_list; //list of free ids
 	protected ResourceDB resources;
+	protected CollisionMap col_map;
 	protected LevelMessage update_msg; //message used to update controller
 	
 	protected Level() {
@@ -33,13 +117,14 @@ public class Level extends Dispatcher implements Listener {
 		this.entity_id_list = new ArrayList<Long> ();
 		this.ctrl_id = 0;
 		this.ctrl_id_list = new ArrayList<Long> ();
-		this.update_msg = new LevelMessage(MsgType.LEVEL_UPDATE, this, null);
+		this.update_msg = new LevelMessage(MsgType.LEVEL_UPDATE, this, null, 0, 0);
 	}
 	
 	public Level(Map m, ResourceDB db) {
 		this();
 		this.map = m;
 		this.resources = db;
+		this.col_map = new CollisionMap(this);
 	}
 	
 	public Map getMap() {
@@ -78,7 +163,13 @@ public class Level extends Dispatcher implements Listener {
 		}
 		//if it is not in the level already, set an id for the entity and add it
 		e.setId(this.getFreeId(IdType.ENTITY));
-		this.entity_list.add(e);	
+		
+		//set up collision map
+		e.addSubscriber(this.col_map, MsgType.ENTITY_MOVE);
+		this.col_map.addEntity(e);
+		
+		this.entity_list.add(e);
+		
 		return e.getId();
 	}
 	
@@ -144,7 +235,9 @@ public class Level extends Dispatcher implements Listener {
 	public boolean removeEntity(long id) {
 		for (Entity e : this.entity_list) {
 			if (e.getId() == id) {
-				entity_list.remove(e);
+				this.entity_list.remove(e);
+				this.col_map.removeEntity(e);
+				
 				//add the entity's id to the list of free ids
 				this.entity_id_list.add(e.getId());
 
@@ -236,15 +329,16 @@ public class Level extends Dispatcher implements Listener {
 	
 	//update controllers
 	//this method is called each frame
-	public void update(boolean[] key_state) {
+	public void update(boolean[] key_state, int mouse_x, int mouse_y) {
 		//update physics
 		this.updatePhysics();
 		
 		//check collisions
 		this.checkCollisions();
 		
-		//update keystate
+		//update input events
 		this.update_msg.setKeyState(key_state);
+		this.update_msg.setMousePosition(mouse_x, mouse_y);
 		
 		//broadcast update message to controllers
 		for (Controller c : this.ctrl_list) {
