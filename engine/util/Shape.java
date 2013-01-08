@@ -159,8 +159,6 @@ public abstract class Shape {
     		}
     	}
     	
-    	System.out.println(smallest_overlap+" "+smallest_overlap_axis.getX()+" "+smallest_overlap_axis.getY());
-    	
     	Vector2D mtv = new Vector2D(smallest_overlap_axis.getX(), smallest_overlap_axis.getY());
     	mtv.normalize();
     	mtv.setMagnitude(smallest_overlap);

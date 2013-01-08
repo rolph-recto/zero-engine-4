@@ -31,6 +31,7 @@ import engine.View;
 import engine.msgtype.EntityMoveMessage;
 import engine.msgtype.LevelMessage;
 import engine.util.Circle;
+import engine.util.Listener;
 import engine.util.Message;
 import engine.util.Polygon;
 import engine.util.Shape;
@@ -211,9 +212,14 @@ public class TestJava2D extends JFrame implements KeyListener {
         }
         */
         
-        /*
+        
         Polygon rect = new Polygon( new Vector2D[]{
         	new Vector2D(-16.0,-16.0),
+        	new Vector2D(16.0,-16.0),
+        	new Vector2D(16.0,16.0),
+        	new Vector2D(-16.0,16.0)});
+        
+        Polygon triangle = new Polygon(new Vector2D[]{
         	new Vector2D(16.0,-16.0),
         	new Vector2D(16.0,16.0),
         	new Vector2D(-16.0,16.0)});
@@ -225,11 +231,10 @@ public class TestJava2D extends JFrame implements KeyListener {
         this.tile_data.addTileTemplate("Four", (short)3, rect, false);
         this.tile_data.addTileTemplate("Five", (short)4, rect, false);
         this.tile_data.addTileTemplate("Six", (short)5, rect, false);
-        this.tile_data.addTileTemplate("Seven", (short)6, rect, false);
+        this.tile_data.addTileTemplate("Seven", (short)6, triangle, false);
         this.tile_data.addTileTemplate("Eight", (short)7, rect, false);
         this.tile_data.addTileTemplate("Nine", (short)8, rect, false);
         this.tile_data.addTileTemplate("Ten", (short)9, rect, false);
-        
 		
         try {
         	//this.tile_data = new TileData("tiledata.txt");
@@ -238,7 +243,7 @@ public class TestJava2D extends JFrame implements KeyListener {
         catch (IOException e) {
         	System.out.println("ERROR IO");
         }
-        */
+        
         
         /*
         this.map = new Map(this.tile_data, 50, 50);
@@ -259,11 +264,16 @@ public class TestJava2D extends JFrame implements KeyListener {
         try {
         	//this.map.save("map.txt");
         	//this.map.load("map.txt");
-        	this.map = new Map(db.getTileData("tiledata"), "map.txt");
-        	this.map.setPointAtLayer("base", 15, 15, (short)5);
+        	this.map = new Map(this.tile_data, "map.txt");
+        	this.map.setPointAtLayer("base", 15, 15, (short)6);
         	this.map.setPointAtLayer("base", 15, 16, (short)5);
-        	this.map.setPointAtLayer("base", 15, 17, (short)5);
-        	this.map.setPointAtLayer("base", 15, 18, (short)5);
+        	this.map.setPointAtLayer("base", 16, 14, (short)6);
+        	this.map.setPointAtLayer("base", 16, 15, (short)5);
+        	this.map.setPointAtLayer("base", 16, 16, (short)5);
+        	this.map.setPointAtLayer("base", 17, 13, (short)6);
+        	this.map.setPointAtLayer("base", 17, 14, (short)5);
+        	this.map.setPointAtLayer("base", 17, 15, (short)5);
+        	this.map.setPointAtLayer("base", 17, 16, (short)5);
         	this.map.setLayerOrder("overlay", 1);
         }
         catch (IOException e) {}
@@ -292,6 +302,8 @@ public class TestJava2D extends JFrame implements KeyListener {
         
         long id = this.level.createEntity("player", "player1", 200, 200);
         this.player = this.level.getEntityById(id);
+        
+        this.level.createEntity("player", "player2", 250, 200);
         
         this.mainLoop();
 	}

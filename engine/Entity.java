@@ -76,28 +76,36 @@ public class Entity extends Dispatcher implements Listener {
 		return this.old_pos_y;
 	}
 	
-	public void setPosX(double pos_x) {
-		this.old_pos_x = this.getPosX();
-		this.model.getShape().setPosX(pos_x);
+	/*
+	public void setPosX(double x) {
+		if (x != this.getPosX()) {
+			this.old_pos_x = this.getPosX();
+			this.model.getShape().setPosX(x);
+		}
 	}
 	
 	public void translateX(double x) {
 		this.setPosX(this.getPosX()+x);
 	}
 
-	public void setPosY(double pos_y) {
-		this.old_pos_y = this.getPosY();
-		this.model.getShape().setPosY(pos_y);
+	public void setPosY(double y) {
+		if (y != this.getPosY()) {
+			this.old_pos_y = this.getPosY();
+			this.model.getShape().setPosY(y);
+		}
 	}
 	
 	public void translateY(double y) {
 		this.setPosY(this.getPosY()+y);
 	}
+	*/
 	
 	public void setPosition(double x, double y) {
-		this.old_pos_x = this.getPosX();
-		this.old_pos_y = this.getPosY();
-		this.model.getShape().setPosition(x, y);
+		if (x != this.getPosX() || y != this.getPosY()) {
+			this.old_pos_x = this.getPosX();
+			this.old_pos_y = this.getPosY();
+			this.model.getShape().setPosition(x, y);
+		}
 	}
 	
 	public void translate(double x, double y) {
