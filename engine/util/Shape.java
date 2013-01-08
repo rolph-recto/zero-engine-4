@@ -95,7 +95,7 @@ public abstract class Shape {
     public boolean collision(Shape s) {
     	//get separating axes for which to test collisions
     	Vector2D[] axes1 = this.getSeparatingAxes(s);
-    	Vector2D[] axes2 = s.getSeparatingAxes(s);
+    	Vector2D[] axes2 = s.getSeparatingAxes(this);
     	Vector2D[] axes = new Vector2D[axes1.length + axes2.length];
     	System.arraycopy(axes1, 0, axes, 0, axes1.length);
     	System.arraycopy(axes2, 0, axes, axes1.length, axes2.length);
@@ -123,6 +123,48 @@ public abstract class Shape {
     	//if we have gotten this far, that means all the projections intersect
     	//and the shapes intersect
     	return true;
+    }
+    
+    //get minimum translator vector
+	//this assumes that shape projections collide for all axes
+	//(i.e., the shapes collide)
+    public Vector2D getMTV(Shape s) {
+    	//get separating axes
+    	Vector2D[] axes1 = this.getSeparatingAxes(s);
+    	Vector2D[] axes2 = s.getSeparatingAxes(this);
+    	Vector2D[] axes = new Vector2D[axes1.length + axes2.length];
+    	System.arraycopy(axes1, 0, axes, 0, axes1.length);
+    	System.arraycopy(axes2, 0, axes, axes1.length, axes2.length);
+    	
+    	double smallest_overlap = -1.0;
+    	Vector2D smallest_overlap_axis = null;
+    	
+    	//find projections of p1 and p2 for each separating axis
+    	for (Vector2D axis : axes) {
+    		double overlap = 0.0;
+    		Projection p1_proj = this.project(axis);
+    		Projection p2_proj = s.project(axis);
+    		
+    		//calculate overlap
+    		if (p1_proj.getMax() > p2_proj.getMin()) {
+    			overlap = p1_proj.getMax() - p2_proj.getMin();
+    		}
+    		else if (p2_proj.getMax() > p1_proj.getMin()) {
+    			overlap = p2_proj.getMax() - p1_proj.getMin();
+    		}
+    		
+    		if (overlap < smallest_overlap || smallest_overlap == -1.0) {
+    			smallest_overlap = overlap;
+    			smallest_overlap_axis = axis;
+    		}
+    	}
+    	
+    	System.out.println(smallest_overlap+" "+smallest_overlap_axis.getX()+" "+smallest_overlap_axis.getY());
+    	
+    	Vector2D mtv = new Vector2D(smallest_overlap_axis.getX(), smallest_overlap_axis.getY());
+    	mtv.normalize();
+    	mtv.setMagnitude(smallest_overlap);
+    	return mtv;
     }
     
     public abstract Shape clone();

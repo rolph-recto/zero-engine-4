@@ -260,6 +260,10 @@ public class TestJava2D extends JFrame implements KeyListener {
         	//this.map.save("map.txt");
         	//this.map.load("map.txt");
         	this.map = new Map(db.getTileData("tiledata"), "map.txt");
+        	this.map.setPointAtLayer("base", 15, 15, (short)5);
+        	this.map.setPointAtLayer("base", 15, 16, (short)5);
+        	this.map.setPointAtLayer("base", 15, 17, (short)5);
+        	this.map.setPointAtLayer("base", 15, 18, (short)5);
         	this.map.setLayerOrder("overlay", 1);
         }
         catch (IOException e) {}

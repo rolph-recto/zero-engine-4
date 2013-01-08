@@ -3,11 +3,16 @@
 
 package engine;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import engine.util.*;
-import engine.msgtype.*;
+import java.util.ArrayList;
+
+import engine.msgtype.EntityMessage;
+import engine.msgtype.EntityMoveMessage;
+import engine.msgtype.LevelMessage;
+import engine.util.Dispatcher;
+import engine.util.Listener;
+import engine.util.Message;
+import engine.util.Shape;
+import engine.util.Vector2D;
 
 /*
  * Collision data class
@@ -324,6 +329,47 @@ public class Level extends Dispatcher implements Listener {
 	
 	//check if objects are colliding, then broadcast collision messages
 	protected void checkCollisions() {
+		TileData tile_data = this.map.getTileData();
+		MapLayer base = this.map.getBaseLayer();
+		int tile_width = this.map.getTileData().getTileWidth();
+		int tile_height = this.map.getTileData().getTileHeight();
+		int map_width = this.map.getBaseLayer().getWidth();
+		int map_height = this.map.getBaseLayer().getHeight();
+		
+		for (Entity e : this.entity_list) {
+			int entity_cell_x = (int)(Math.floor(e.getPosX()/tile_width));
+			int entity_cell_y = (int)(Math.floor(e.getPosY()/tile_height));
+			
+			//check object collisions with tiles
+			//first, create list of tiles to check
+			//must check tiles adjacent to the one the entity is in
+			int tile_x1 = (entity_cell_x-1 >= 0) ? entity_cell_x-1 : 0;
+			int tile_x2 = (entity_cell_x+1 < map_width ) ? entity_cell_x+1 : map_width-1;
+			int tile_y1 = (entity_cell_y-1 >= 0) ? entity_cell_y-1 : 0;
+			int tile_y2 = (entity_cell_y+1 < map_height ) ? entity_cell_y+1 : map_height-1;
+			
+			for (int x=tile_x1; x<=tile_x2; x++) {
+				for (int y=tile_y1; y<=tile_y2; y++) {
+					TileTemplate t = tile_data.getTileTemplate(base.getPointData(x, y));
+					//only check for collision if the tile is not empty
+					if (t.isEmpty() == false) {
+						Shape tile_shape = t.getShape();
+						//set shape position as the center of the cell
+						tile_shape.setPosX((x*tile_width)+(tile_width/2));
+						tile_shape.setPosY((y*tile_height)+(tile_height/2));
+						
+						//player is colliding with a wall; set collision response
+						if (tile_shape.collision(e.getModel().getShape())) {
+							// TODO broadcast collision event
+							
+							Vector2D mtv = tile_shape.getMTV(e.getModel().getShape());
+							e.translate(mtv.getX(), mtv.getY());
+							System.out.println("COLLISION "+mtv.getX()+" "+mtv.getY()+" "+e.getPosX()+" "+e.getPosY());
+						}
+					}
+				}
+			}
+		}
 		
 	}
 	
