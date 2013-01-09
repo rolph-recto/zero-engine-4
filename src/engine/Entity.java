@@ -21,6 +21,8 @@ public class Entity extends Dispatcher implements Listener {
 	protected boolean moved; //did the entity move this frame?
 	protected boolean dynamic; //can the entity move?
 	protected double friction; //constant of friction
+	protected int col_mask; //what other types of entities will this collide with?
+	protected int col_type; //what type of entity is this, for collision response purposes?
 	
 	public Entity () {
 		super();
@@ -216,7 +218,23 @@ public class Entity extends Dispatcher implements Listener {
 		
 		this.friction = friction;
 	}
-
+	
+	public int getCollisionMask() {
+		return this.col_mask;
+	}
+	
+	public void setCollisionMask(int mask) {
+		this.col_mask = mask;
+	}
+	
+	public int getCollisionType() {
+		return this.col_type;
+	}
+	
+	public void setCollisionType(int type) {
+		this.col_type = type;
+	}
+	
 	/**
 	 * Updates the velocity, then the position of the entity.
 	 * 

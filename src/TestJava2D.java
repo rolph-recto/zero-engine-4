@@ -154,6 +154,17 @@ class PlayerType implements EntityType {
 	public double getFriction() {
 		return 0.0;
 	}
+	
+	public int getCollisionMask() {
+		//collide with other players and enemies
+		//mask: 0000 0000 0000 0110
+		return 0x0006;
+	}
+	
+	public int getCollisionType() {
+		//player type
+		return 0x0002;
+	}
 }
 
 public class TestJava2D extends JFrame implements KeyListener {

@@ -1,5 +1,7 @@
 package engine;
 
+import java.util.BitSet;
+
 import engine.util.*;
 
 /*
@@ -8,15 +10,10 @@ import engine.util.*;
  */
 public class NullEntityType implements EntityType {
 	public static final NullEntityType instance = new NullEntityType();
-	private static Model model;
 	private static NullController controller = new NullController();
 	
 	//set the constructor to private so an instance of NullEntityType can't be created
-	private NullEntityType() {
-		Shape s = new Circle(0.0);
-		
-		NullEntityType.model = new Model(s, null);
-	}
+	private NullEntityType() {}
 	
 	public String getName() {
 		return "NullEntityType";
@@ -34,10 +31,6 @@ public class NullEntityType implements EntityType {
 		return new Entity();
 	}
 	
-	public Model getModel() {
-		return NullEntityType.model;
-	}
-	
 	public boolean isDynamic() {
 		return false;
 	}
@@ -48,5 +41,15 @@ public class NullEntityType implements EntityType {
 	
 	public double getFriction() {
 		return 0.0;
+	}
+	
+	public int getCollisionMask() {
+		//do not collide with anything!
+		//mask: 0000 0000 0000 0000
+		return 0x0000;
+	}
+	
+	public int getCollisionType() {
+		return 0x0001;
 	}
 }

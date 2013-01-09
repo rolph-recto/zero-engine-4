@@ -225,6 +225,8 @@ public class Level extends Dispatcher implements Listener {
 		e.setName(name);
 		e.setDynamic(type.isDynamic());
 		e.setFriction(type.getFriction());
+		e.setCollisionMask(type.getCollisionMask());
+		e.setCollisionType(type.getCollisionType());
 		
 		//set controller
 		Controller ctrl = type.createController();
@@ -385,9 +387,10 @@ public class Level extends Dispatcher implements Listener {
 						//first get list of entities within the cell
 						ArrayList<Entity> entity_cell_list = entity_map.get(x).get(y);
 						boolean collided = false;
-						//make sure the entity doesn't check collision with itself!
 						for (Entity e2 : entity_cell_list) {
-							if (e != e2) {
+							//make sure the entity doesn't check collision with itself!
+							//also check collision type first
+							if ( (e != e2) && ((e2.getCollisionType()&e.getCollisionMask()) != 0) ) {
 								Shape e2_shape = e2.getModel().getShape();
 								
 								//objects collide
