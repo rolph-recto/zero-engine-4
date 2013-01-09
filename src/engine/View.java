@@ -208,7 +208,7 @@ public class View {
 			if (visible) {
 				transform.setToIdentity();
 				transform.translate(s.getPosX()+this.pos_x-this.cam_x, s.getPosY()+this.pos_y-this.cam_y);
-				transform.rotate(Math.toRadians(s.getRotation()));
+				transform.rotate(Math.toRadians(360.0-s.getRotation()));
 				g2d.setTransform(transform);
 				
 				spr.setPosition((int)(-spr.getWidth()/2), (int)(-spr.getHeight()/2));

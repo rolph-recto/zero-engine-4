@@ -410,6 +410,8 @@ public class Level extends Dispatcher implements Listener {
 						if (collided) {
 							this.col_map.updateEntity(e);	
 						}
+						
+						// TODO implement raycasting
 					}
 				}
 			}

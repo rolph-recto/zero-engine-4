@@ -8,6 +8,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -202,15 +204,14 @@ public class TestJava2D extends JFrame implements KeyListener {
 		} 
 		
 		db.addEntityType("player", PlayerType.instance);
-		
 		/*
         try {
-            this.tileset = new Tileset("tileset.tls");
+            this.tileset = new Tileset(ImageIO.read(new File("tileset.png")), 32, 32);
+            this.tileset.save("tileset.tls");
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-        */
         
         
         Polygon rect = new Polygon( new Vector2D[]{
@@ -224,14 +225,14 @@ public class TestJava2D extends JFrame implements KeyListener {
         	new Vector2D(16.0,16.0),
         	new Vector2D(-16.0,16.0)});
 		
-        this.tile_data = new TileData(db.getTileset("tileset"));
+        this.tile_data = new TileData(this.tileset);
         this.tile_data.addTileTemplate("One", (short)0, rect, true);
         this.tile_data.addTileTemplate("Two", (short)1, rect, true);
         this.tile_data.addTileTemplate("Three", (short)2, rect, true);
         this.tile_data.addTileTemplate("Four", (short)3, rect, false);
         this.tile_data.addTileTemplate("Five", (short)4, rect, false);
         this.tile_data.addTileTemplate("Six", (short)5, rect, false);
-        this.tile_data.addTileTemplate("Seven", (short)6, triangle, false);
+        this.tile_data.addTileTemplate("Seven", (short)6, rect, false);
         this.tile_data.addTileTemplate("Eight", (short)7, rect, false);
         this.tile_data.addTileTemplate("Nine", (short)8, rect, false);
         this.tile_data.addTileTemplate("Ten", (short)9, rect, false);
@@ -243,7 +244,7 @@ public class TestJava2D extends JFrame implements KeyListener {
         catch (IOException e) {
         	System.out.println("ERROR IO");
         }
-        
+        */
         
         /*
         this.map = new Map(this.tile_data, 50, 50);
@@ -264,7 +265,7 @@ public class TestJava2D extends JFrame implements KeyListener {
         try {
         	//this.map.save("map.txt");
         	//this.map.load("map.txt");
-        	this.map = new Map(this.tile_data, "map.txt");
+        	this.map = new Map(db.getTileData("tiledata"), "map.txt");
         	this.map.setPointAtLayer("base", 15, 15, (short)6);
         	this.map.setPointAtLayer("base", 15, 16, (short)5);
         	this.map.setPointAtLayer("base", 16, 14, (short)6);
@@ -282,10 +283,9 @@ public class TestJava2D extends JFrame implements KeyListener {
 		Circle c = new Circle(16.0);
 		Sprite s = null;
 		try {
-            s=new Sprite("hero.spr");
+            s=new Sprite(ImageIO.read(new File("hero.png")), 32, 32);
 		}
 		catch (IOException e) {}
-		catch (ClassNotFoundException e) {}
 		
 		Model model_player = new Model(c, s);
 		try {
@@ -302,8 +302,6 @@ public class TestJava2D extends JFrame implements KeyListener {
         
         long id = this.level.createEntity("player", "player1", 200, 200);
         this.player = this.level.getEntityById(id);
-        
-        this.level.createEntity("player", "player2", 250, 200);
         
         this.mainLoop();
 	}
