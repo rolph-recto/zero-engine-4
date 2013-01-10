@@ -36,6 +36,9 @@ public interface EntityType {
 	//constant of friction
 	//this is a value from 1 to 0
 	public abstract double getFriction();
+	//sets the maximum  absolute value of the entity's velocity
+	//does not include rotation
+	public abstract double getMaxVelocity();
 	//determines collision response of the entity
 	//to other types of entities
 	public abstract int getCollisionMask();

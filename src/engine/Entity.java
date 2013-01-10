@@ -21,11 +21,15 @@ public class Entity extends Dispatcher implements Listener {
 	protected boolean moved; //did the entity move this frame?
 	protected boolean dynamic; //can the entity move?
 	protected double friction; //constant of friction
+	protected double max_vel; //maximum velocity
 	protected int col_mask; //what other types of entities will this collide with?
 	protected int col_type; //what type of entity is this, for collision response purposes?
+	protected boolean bullet;
+	protected boolean dead; //should this entity be removed?
 	
 	public Entity () {
 		super();
+		this.dead = false;
 	}
 	
 	public Entity(long a_id) {
@@ -136,10 +140,20 @@ public class Entity extends Dispatcher implements Listener {
 
 	public void setVelX(double vel_x) {
 		this.vel_x = vel_x;
+		//if max_vel <= 0 then there is no max velocity
+		if (this.max_vel > 0.0) {
+			this.vel_x = (vel_x <= this.max_vel) ? this.vel_x : this.max_vel;
+			this.vel_x = (vel_x >= -this.max_vel) ? this.vel_x : -this.max_vel;
+		}
 	}
 	
 	public void setVelY(double vel_y) {
 		this.vel_y = vel_y;
+		//if max_vel <= 0 then there is no max velocity
+		if (this.max_vel > 0.0) {
+			this.vel_y = (vel_y <= this.max_vel) ? this.vel_y : this.max_vel;
+			this.vel_y = (vel_y >= -this.max_vel) ? this.vel_y : -this.max_vel;
+		}
 	}
 	
 	public void setVelRot(double vel_rot) {
@@ -147,9 +161,9 @@ public class Entity extends Dispatcher implements Listener {
 	}
 	
 	public void setVelocity(double x, double y, double rot) {
-		this.vel_x = x;
-		this.vel_y = y;
-		this.vel_rot = rot;
+		this.setVelX(x);
+		this.setVelY(y);
+		this.setVelRot(rot);
 	}
 
 	public double getAccelX() {
@@ -219,6 +233,14 @@ public class Entity extends Dispatcher implements Listener {
 		this.friction = friction;
 	}
 	
+	public double getMaxVelocity() {
+		return this.max_vel;
+	}
+	
+	public void setMaxVelocity(double max) {
+		this.max_vel = max;
+	}
+	
 	public int getCollisionMask() {
 		return this.col_mask;
 	}
@@ -233,6 +255,22 @@ public class Entity extends Dispatcher implements Listener {
 	
 	public void setCollisionType(int type) {
 		this.col_type = type;
+	}
+	
+	public boolean isBullet() {
+		return this.bullet;
+	}
+	
+	public void setBullet(boolean bullet) {
+		this.bullet = bullet;
+	}
+	
+	public boolean isDead() {
+		return this.dead;
+	}
+	
+	public void setDead(boolean dead) {
+		this.dead = dead;
 	}
 	
 	/**

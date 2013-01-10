@@ -30,6 +30,7 @@ import engine.MsgType;
 import engine.ResourceDB;
 import engine.TileData;
 import engine.View;
+import engine.msgtype.EntityCollisionMessage;
 import engine.msgtype.EntityMoveMessage;
 import engine.msgtype.LevelMessage;
 import engine.util.Circle;
@@ -40,6 +41,75 @@ import engine.util.Shape;
 import engine.util.Sprite;
 import engine.util.Tileset;
 import engine.util.Vector2D;
+
+class Bullet extends Entity {
+	public Bullet() {}
+}
+
+class BulletController extends Controller {
+	public BulletController() {
+		super();
+	}
+	
+	public BulletController(Level l, Entity bullet) {
+		super(l, bullet);
+	}
+	
+	public void onMessage(Message msg) {
+		switch (msg.getType()) {
+		//if a bullet collides with a wall, the bullet is dead
+		case ENTITY_COLLIDE_WALL:
+			EntityCollisionMessage col_msg = (EntityCollisionMessage)msg;
+			col_msg.getEntity().setDead(true);
+		}
+	}
+}
+
+class BulletType implements EntityType {
+	public static final BulletType instance = new BulletType();
+	private static final BulletController controller = new BulletController();
+
+	private BulletType() {}
+	
+	public String getName() {
+		return "bullet";
+	}
+	
+	public Controller createController() {
+		return BulletType.controller;
+	}
+	
+	public Entity createEntity() {
+		return new Bullet();
+	}
+	
+	public boolean isDynamic() {
+		return true;
+	}
+	
+	public boolean isBullet() {
+		return true;
+	}
+	
+	public double getFriction() {
+		return 1.0;
+	}
+	
+	public double getMaxVelocity() {
+		return -1.0;
+	}
+	
+	public int getCollisionMask() {
+		//collide with no entities
+		//mask: 0000 0000 0000 0000
+		return 0x0000;
+	}
+	
+	public int getCollisionType() {
+		//bullet type
+		return 0x0008;
+	}
+}
 
 class Player extends Entity {
 	public Player() {}
@@ -82,17 +152,18 @@ class PlayerController extends Controller {
 			move_x = 0.0;
 			move_y = 0.0;
 			
-			if (key_state[KeyEvent.VK_UP]) {
-				move_y = -5.0;		
+			double force = 1.5;
+			if (key_state[KeyEvent.VK_W]) {
+				move_y = -force;		
 			}
-			else if (key_state[KeyEvent.VK_DOWN]) {
-				move_y = 5.0;
+			else if (key_state[KeyEvent.VK_S]) {
+				move_y = force;
 			}
-			if (key_state[KeyEvent.VK_LEFT]) {
-				move_x = -5.0;			
+			if (key_state[KeyEvent.VK_A]) {
+				move_x = -force;			
 			}
-			else if (key_state[KeyEvent.VK_RIGHT]) {
-				move_x = 5.0;
+			else if (key_state[KeyEvent.VK_D]) {
+				move_x = force;
 			}
 
 			//change player orientation
@@ -109,13 +180,21 @@ class PlayerController extends Controller {
 				angle = 360.0 - angle;
 			}
 			angle = (angle >= 360.0) ? 0 : angle;
-			
 			move_rot = angle - this.player.getRotation();
 			
 			EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_COMMAND_MOVE, this.player,
 					move_x, move_y, move_rot);				
 			
 			this.player.onMessage(move_msg);
+			
+			if (key_state[KeyEvent.VK_SPACE]) {
+				Vector2D bullet_pos = new Vector2D(cos, comp_y/magnitude);
+				bullet_pos.setMagnitude(50.0);
+		        long id = this.level.createEntity("bullet",
+		        		this.player.getPosX()+bullet_pos.getX(), this.player.getPosY()+bullet_pos.getY());
+		        bullet_pos.setMagnitude(30.0);
+		        this.level.getEntityById(id).setAcceleration(bullet_pos.getX(), bullet_pos.getY(), 0.0);
+			}
 		default:
 			break;
 		}
@@ -139,10 +218,6 @@ class PlayerType implements EntityType {
 		return new Player();
 	}
 	
-	public boolean isHivemind() {
-		return false;
-	}
-	
 	public boolean isDynamic() {
 		return true;
 	}
@@ -152,7 +227,11 @@ class PlayerType implements EntityType {
 	}
 	
 	public double getFriction() {
-		return 0.0;
+		return 0.8;
+	}
+	
+	public double getMaxVelocity() {
+		return 7.5;
 	}
 	
 	public int getCollisionMask() {
@@ -164,6 +243,24 @@ class PlayerType implements EntityType {
 	public int getCollisionType() {
 		//player type
 		return 0x0002;
+	}
+}
+
+class CollisionListener implements Listener {
+	public void onMessage(Message msg) {
+		EntityCollisionMessage col_msg;
+		switch(msg.getType()) {
+		case ENTITY_COLLIDE_ENTITY:
+			col_msg = (EntityCollisionMessage)msg;
+			System.out.println(col_msg.getEntity()+" "+col_msg.getEntity2());
+			break;
+		case ENTITY_COLLIDE_WALL:
+			col_msg = (EntityCollisionMessage)msg;
+			System.out.println(col_msg.getEntity()+" "+col_msg.getWallX()+" "+col_msg.getWallY());
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -214,7 +311,6 @@ public class TestJava2D extends JFrame implements KeyListener {
 			e.printStackTrace();
 		} 
 		
-		db.addEntityType("player", PlayerType.instance);
 		/*
         try {
             this.tileset = new Tileset(ImageIO.read(new File("tileset.png")), 32, 32);
@@ -223,20 +319,21 @@ public class TestJava2D extends JFrame implements KeyListener {
         catch (IOException e) {
             e.printStackTrace();
         }
+        */
         
         
         Polygon rect = new Polygon( new Vector2D[]{
-        	new Vector2D(-16.0,-16.0),
-        	new Vector2D(16.0,-16.0),
-        	new Vector2D(16.0,16.0),
-        	new Vector2D(-16.0,16.0)});
+        	new Vector2D(-18.0,-18.0),
+        	new Vector2D(18.0,-18.0),
+        	new Vector2D(18.0,18.0),
+        	new Vector2D(-18.0,18.0)});
         
         Polygon triangle = new Polygon(new Vector2D[]{
         	new Vector2D(16.0,-16.0),
         	new Vector2D(16.0,16.0),
         	new Vector2D(-16.0,16.0)});
 		
-        this.tile_data = new TileData(this.tileset);
+        this.tile_data = new TileData(db.getTileset("tileset"));
         this.tile_data.addTileTemplate("One", (short)0, rect, true);
         this.tile_data.addTileTemplate("Two", (short)1, rect, true);
         this.tile_data.addTileTemplate("Three", (short)2, rect, true);
@@ -255,7 +352,7 @@ public class TestJava2D extends JFrame implements KeyListener {
         catch (IOException e) {
         	System.out.println("ERROR IO");
         }
-        */
+        
         
         /*
         this.map = new Map(this.tile_data, 50, 50);
@@ -276,7 +373,7 @@ public class TestJava2D extends JFrame implements KeyListener {
         try {
         	//this.map.save("map.txt");
         	//this.map.load("map.txt");
-        	this.map = new Map(db.getTileData("tiledata"), "map.txt");
+        	this.map = new Map(this.tile_data, "map.txt");
         	this.map.setPointAtLayer("base", 15, 15, (short)6);
         	this.map.setPointAtLayer("base", 15, 16, (short)5);
         	this.map.setPointAtLayer("base", 16, 14, (short)6);
@@ -306,6 +403,24 @@ public class TestJava2D extends JFrame implements KeyListener {
 		
 		db.addModel("player", model_player);
 		*/
+        
+		Circle c = new Circle(1.0);
+		Sprite s = null;
+		try {
+            s=new Sprite(ImageIO.read(new File("bullet.png")), 2, 2);
+		}
+		catch (IOException e) {}
+		
+		Model model_bullet = new Model(c, s);
+		try {
+			model_bullet.save("bullet.txt");
+		}
+		catch (IOException e) {}
+		
+		db.addModel("bullet", model_bullet);
+		
+		db.addEntityType("player", PlayerType.instance);
+		db.addEntityType("bullet", BulletType.instance);
 			
         this.level = new Level(this.map, db);
         this.view = new View(this.level, 640, 416);
@@ -313,7 +428,8 @@ public class TestJava2D extends JFrame implements KeyListener {
         
         long id = this.level.createEntity("player", "player1", 200, 200);
         this.player = this.level.getEntityById(id);
-        
+        this.player.addSubscriber(new CollisionListener(), MsgType.ENTITY_COLLIDE_ENTITY);
+        this.player.addSubscriber(new CollisionListener(), MsgType.ENTITY_COLLIDE_WALL);
         this.mainLoop();
 	}
 	
@@ -326,8 +442,14 @@ public class TestJava2D extends JFrame implements KeyListener {
 			//change mouse location from screen coords to level coords
 			mouse_x = mouse_x - this.view.getPosX() + this.view.getCamX();
 			mouse_y = mouse_y - this.view.getPosY() + this.view.getCamY();
+			int off_x = (int)Math.floor((mouse_x-this.player.getPosX())*0.25);
+			off_x = (off_x >= -275) ? off_x : -275;
+			off_x = (off_x <= 275) ? off_x : 275;
+			int off_y = (int)Math.floor((mouse_y-this.player.getPosY())*0.25);
+			off_y = (off_y >= -150) ? off_y : -150;
+			off_y = (off_y <= 150) ? off_y : 150;
 
-			this.view.focusTo("player1");
+			this.view.focusTo("player1", off_x, off_y);
 			this.level.update(this.key_state, mouse_x, mouse_y);
 			this.repaint();
 			try {

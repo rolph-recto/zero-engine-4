@@ -348,15 +348,19 @@ public class View {
 		g2d.setClip(null);
 	}
 	
-	//this method is protected so the camera can't focus
-	//to entities that are not in the level
-	protected void focusTo(Entity e) {
+	protected void focusTo(Entity e, int off_x, int off_y) {
 		if (e == null) {
 			throw new IllegalArgumentException("View: Cannot focus on a null entity");
 		}
-		int cam_x = (int)(e.getPosX() - (this.cam_width/2));
-		int cam_y = (int)(e.getPosY() - (this.cam_height/2));
+		int cam_x = (int)(e.getPosX() - (this.cam_width/2)) + off_x;
+		int cam_y = (int)(e.getPosY() - (this.cam_height/2)) + off_y;
 		this.setCamPosition(cam_x, cam_y);
+	}
+	
+	//this method is protected so the camera can't focus
+	//to entities that are not in the level
+	protected void focusTo(Entity e) {
+		this.focusTo(e, 0, 0);
 	}
 	
 	//focuses the camera to a specific Entity
@@ -368,4 +372,15 @@ public class View {
 	public void focusTo(String entity_name) {
 		this.focusTo(this.level.getEntityByName(entity_name));
 	}
+	
+	//focuses the camera to a specific Entity
+	public void focusTo(int entity_id, int off_x, int off_y) {
+		this.focusTo(this.level.getEntityById(entity_id), off_x, off_y);
+	}
+	
+	//focuses the camera to a specific Entity
+	public void focusTo(String entity_name, int off_x, int off_y) {
+		this.focusTo(this.level.getEntityByName(entity_name), off_x, off_y);
+	}
+	
 }

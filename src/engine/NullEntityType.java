@@ -43,6 +43,10 @@ public class NullEntityType implements EntityType {
 		return 0.0;
 	}
 	
+	public double getMaxVelocity() {
+		return 0.0;
+	}
+	
 	public int getCollisionMask() {
 		//do not collide with anything!
 		//mask: 0000 0000 0000 0000
