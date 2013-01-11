@@ -23,7 +23,8 @@ import engine.util.Vector2D;
 final class CollisionMap implements Listener {
 	//each cell has a list of entities
 	//updates automatically for each entity movement
-	private ArrayList<ArrayList<ArrayList<Entity>>> entity_map;
+	private ArrayList<ArrayList<ArrayList<Long>>> entity_map;
+	private int width, height;
 	private Level level;
 	
 	public CollisionMap(Level level) {
@@ -33,30 +34,34 @@ final class CollisionMap implements Listener {
 	
 	private void initArrays() {
 		MapLayer base = this.level.getMap().getBaseLayer();
-		int width = base.getWidth();
-		int height = base.getHeight();
+		this.width = base.getWidth();
+		this.height = base.getHeight();
 		
-		this.entity_map = new ArrayList<ArrayList<ArrayList<Entity>>>(width);
+		this.entity_map = new ArrayList<ArrayList<ArrayList<Long>>>(width);
 		for (int x=0; x<width; x++) {
 			//set columns
-			this.entity_map.add(new ArrayList<ArrayList<Entity>>(height));
+			this.entity_map.add(new ArrayList<ArrayList<Long>>(height));
 			
 			//set rows
 			for (int y=0; y<height; y++) {
-				this.entity_map.get(x).add(new ArrayList<Entity>());
+				this.entity_map.get(x).add(new ArrayList<Long>());
 			}
 		}
 	}
 	
 	//add an entity into the map
+	//this method is actually made superfluous by updateEntity()
 	public void addEntity(Entity e) {
 		int tile_width = this.level.getMap().getTileData().getTileWidth();
 		int tile_height = this.level.getMap().getTileData().getTileHeight();
 		int x = (int)(Math.floor(e.getPosX()/tile_width));
 		int y = (int)(Math.floor(e.getPosY()/tile_height));
 		
-		this.entity_map.get(x).get(y).add(e);
+		if (x>=0 && x<this.width && y>=0 && y<this.height) {
+			this.entity_map.get(x).get(y).add(Long.valueOf(e.getId()));
+		}
 	}
+	
 	
 	//remove an entity from the map
 	public void removeEntity(Entity e) {
@@ -65,7 +70,20 @@ final class CollisionMap implements Listener {
 		int x = (int)(Math.floor(e.getPosX()/tile_width));
 		int y = (int)(Math.floor(e.getPosY()/tile_height));
 		
-		this.entity_map.get(x).get(y).remove(e);
+		if (x>=0 && x<this.width && y>=0 && y<this.height) {
+			this.entity_map.get(x).get(y).remove(Long.valueOf(e.getId()));
+		}
+	}
+	
+	protected void removeEntityFromCell(long id, int x, int y) {
+		ArrayList<Long> entity_cell_list = this.entity_map.get(x).get(y);
+		Long id_cast = Long.valueOf(id);
+		for (int i=0; i<entity_cell_list.size(); i++) {
+			if (id_cast.equals(entity_cell_list.get(i))) {
+				this.entity_map.get(x).get(y).remove(i);
+				break;
+			}
+		}
 	}
 	
 	public void updateEntity(Entity e) {
@@ -80,8 +98,13 @@ final class CollisionMap implements Listener {
 		
 		//only switch if the coords are different
 		if (old_x != x || old_y != y) {
-			this.entity_map.get(old_x).get(old_y).remove(e);
-			this.entity_map.get(x).get(y).add(e);
+			if (old_x>=0 && old_x<this.width && old_y>=0 && old_y<this.height) {
+				this.removeEntityFromCell(e.getId(), old_x, old_y);
+			}
+			if (x>=0 && x<this.width && y>=0 && y<this.height) {
+				this.removeEntityFromCell(e.getId(), x, y); //for some reason, the id sometimes duplicates in the cell!
+				this.entity_map.get(x).get(y).add(Long.valueOf(e.getId()));
+			}
 		}
 	}
 	
@@ -97,7 +120,7 @@ final class CollisionMap implements Listener {
 		}
 	}
 	
-	public ArrayList<ArrayList<ArrayList<Entity>>> getEntityMap() {
+	public ArrayList<ArrayList<ArrayList<Long>>> getEntityMap() {
 		return this.entity_map;
 	}
 }
@@ -254,6 +277,19 @@ public class Level extends Dispatcher implements Listener {
 		//add the entity's id to the list of free ids
 		this.entity_id_list.add(e.getId());
 
+		//remove the entity from its controller
+		ArrayList<Controller> ctrl_list_copy = new ArrayList<Controller>(this.ctrl_list);
+		for (Controller ctrl : ctrl_list_copy) {
+			if (ctrl.getEntityList().contains(e)) {
+				ctrl.removeEntity(e);
+				//if that was the only entity the controller is bound to,
+				//remove the controller too
+				if (ctrl.getEntityList().size() == 0) {
+					this.removeController(ctrl);
+				}
+			}
+		}
+		
 		//Broadcast message ENTITY_DESTROY
 		this.broadcast(new EntityMessage(MsgType.ENTITY_DESTROY, e));
 	}
@@ -311,11 +347,15 @@ public class Level extends Dispatcher implements Listener {
 		return id;
 	}
 	
+	protected void removeController(Controller c) {
+		this.ctrl_list.remove(c);
+	}
+	
 	//remove a controller
 	public boolean removeController(long id) {
 		for (Controller c : this.ctrl_list) {
 			if (c.getId() == id) {
-				this.ctrl_list.remove(c);
+				this.removeController(c);
 				return true;
 			}
 		}
@@ -342,15 +382,18 @@ public class Level extends Dispatcher implements Listener {
 	
 	//check collision for one entity
 	//returns true if there was a collision
+	//if update_old_pos is true, then the entity's old position will be recorded
+	//only update the old position when we know this is the last call
+	//to checkCollision(); else, the old position will be wrong
 	protected boolean checkCollision(Entity e) {
 		TileData tile_data = this.map.getTileData();
 		MapLayer base = this.map.getBaseLayer();
-		ArrayList<ArrayList<ArrayList<Entity>>> entity_map = this.col_map.getEntityMap();
+		ArrayList<ArrayList<ArrayList<Long>>> entity_map = this.col_map.getEntityMap();
 		int tile_width = this.map.getTileData().getTileWidth();
 		int tile_height = this.map.getTileData().getTileHeight();
 		int map_width = this.map.getBaseLayer().getWidth();
 		int map_height = this.map.getBaseLayer().getHeight();
-		Shape e_shape = e.getModel().getShape();
+		Shape entity_shape = e.getModel().getShape().clone();
 		
 		int entity_cell_x = (int)(Math.floor(e.getPosX()/tile_width));
 		int entity_cell_y = (int)(Math.floor(e.getPosY()/tile_height));
@@ -363,8 +406,8 @@ public class Level extends Dispatcher implements Listener {
 		int tile_y1 = (entity_cell_y-1 >= 0) ? entity_cell_y-1 : 0;
 		int tile_y2 = (entity_cell_y+1 < map_height ) ? entity_cell_y+1 : map_height-1;
 		
-		boolean collided = false;
-		
+		boolean col_x = false;
+		boolean col_y = false;
 		//check for collisions within the block of tles
 		//(narrow-phase collision detection)
 		for (int x=tile_x1; x<=tile_x2; x++) {
@@ -379,15 +422,13 @@ public class Level extends Dispatcher implements Listener {
 					tile_shape.setPosY((y*tile_height)+(tile_height/2));
 					
 					//player is colliding with a wall
-					if (tile_shape.collision(e_shape)) {
-						collided = true;
+					if (tile_shape.collision(entity_shape)) {
 						//collision response: translate entity away from the wall
-						Vector2D mtv = tile_shape.getMTV(e_shape);
-						e.translate(mtv.getX(), mtv.getY());
+						Vector2D mtv = tile_shape.getMTV(entity_shape);
+						entity_shape.translate(mtv.getX(), mtv.getY());
 						//to prevent jittering, set velocity to 0
-						if (mtv.getX() != 0.0) e.setVelX(0.0);
-						if (mtv.getY() != 0.0) e.setVelY(0.0);
-						this.col_map.updateEntity(e);
+						if (mtv.getX() != 0.0) col_x = true;
+						if (mtv.getY() != 0.0) col_y = true;
 						
 						//broadcast the message
 						e.broadcast(new EntityCollisionMessage(e, x, y));
@@ -396,25 +437,25 @@ public class Level extends Dispatcher implements Listener {
 				
 				//check object collisions
 				//first get list of entities within the cell
-				ArrayList<Entity> entity_cell_list = entity_map.get(x).get(y);
-				boolean update_entity_map = false;
-				for (Entity e2 : entity_cell_list) {
+				ArrayList<Long> entity_cell_list = entity_map.get(x).get(y);
+				for (Long e2_id : entity_cell_list) {
+					Entity e2 = this.getEntityById(e2_id.longValue());
+					
 					//make sure the entity doesn't check collision with itself!
 					//also check collision type first
-					if (e != e2) {
+					if (e2 != null && e != e2) {
 						Shape e2_shape = e2.getModel().getShape();
 						
 						//objects collide
-						if (e_shape.collision(e2_shape)) {
+						if (entity_shape.collision(e2_shape)) {
 							//check collision mask first before doing collision response
 							 if ((e2.getCollisionType()&e.getCollisionMask()) != 0) {
 								//collision response: translate entity away from other entity
-								Vector2D mtv = e2_shape.getMTV(e_shape);
-								e.translate(mtv.getX(), mtv.getY());
-								if (mtv.getX() != 0.0) e.setVelX(0.0);
-								if (mtv.getY() != 0.0) e.setVelY(0.0);
-								update_entity_map = true;
-								collided = true;
+								Vector2D mtv = e2_shape.getMTV(entity_shape);
+								entity_shape.translate(mtv.getX(), mtv.getY());
+							
+								if (mtv.getX() != 0.0) col_x = true;
+								if (mtv.getY() != 0.0) col_y = true;
 							 }
 							
 							//broadcast the message
@@ -425,22 +466,22 @@ public class Level extends Dispatcher implements Listener {
 						}
 					}
 				}
-				//must do it outside of the loop b/c it crashes
-				//when you try to remove an element while in the loop
-				if (update_entity_map) {
-					this.col_map.updateEntity(e);	
-				}
 			}
 		} //monster of a method!
 		
-		return collided;
+		//if the entity collides, reset its velocity
+		if (col_x) e.setVelX(0.0);
+		if (col_y) e.setVelY(0.0);
+		//only move the entity if it actually collided with something
+		if (col_x || col_y) {
+			e.setPosition(entity_shape.getPosX(), entity_shape.getPosY());
+		}
+		
+		return col_x || col_y;
 	}
 	
 	//check if objects are colliding, then broadcast collision messages
 	protected void checkCollisions() {
-		int tile_width = this.map.getTileData().getTileWidth();
-		int tile_height = this.map.getTileData().getTileHeight();
-		
 		for (Entity e : this.entity_list) {
 			//only check for collisions if the entity moved
 			if (e.getMoved()) {

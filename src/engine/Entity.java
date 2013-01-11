@@ -14,7 +14,7 @@ public class Entity extends Dispatcher implements Listener {
 	protected long id;
 	protected String name;
 	protected Model model;
-	protected double old_pos_x, old_pos_y; //previous position on the entity
+	protected double old_pos_x, old_pos_y, old_rot; //previous position on the entity
 	protected double vel_x, vel_y, vel_rot; //velocities of position and rotation
 	protected double accel_x, accel_y, accel_rot; //velocities of position and rotation
 	protected EntityType type;
@@ -29,6 +29,8 @@ public class Entity extends Dispatcher implements Listener {
 	
 	public Entity () {
 		super();
+		this.old_pos_x = -1.0;
+		this.old_pos_y = -1.0;
 		this.dead = false;
 	}
 	
@@ -106,12 +108,42 @@ public class Entity extends Dispatcher implements Listener {
 	}
 	*/
 	
-	public void setPosition(double x, double y) {
+	public void setPosRot(double x, double y, double rot) {
+		double dx = 0.0;
+		double dy = 0.0;
+		double drot = 0.0;
 		if (x != this.getPosX() || y != this.getPosY()) {
-			this.old_pos_x = this.getPosX();
-			this.old_pos_y = this.getPosY();
+			//the entity has moved before
+			if (this.old_pos_x != -1.0 && this.old_pos_y != -1.0) {
+				this.old_pos_x = this.getPosX();
+				this.old_pos_y = this.getPosY();
+			}
+			//the entity has not moved before; set old position as current position
+			else {
+				this.old_pos_x = x;
+				this.old_pos_y = y;
+			}
 			this.model.getShape().setPosition(x, y);
+			dx = x - this.old_pos_x;
+			dy = y - this.old_pos_y;
+			this.moved = true;
 		}
+		if (rot != this.getRotation()) {
+			this.old_rot = this.getRotation();
+			this.model.getShape().setRotation(rot);
+			drot = rot - this.old_rot;
+			this.moved = true;
+		}
+		
+		if (this.moved) {
+			//broadcast message: ENTITY_MOVE
+			EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_MOVE, this, dx, dy, drot);
+			this.broadcast(move_msg);
+		}
+	}
+	
+	public void setPosition(double x, double y) {
+		this.setPosRot(x, y, this.getRotation());
 	}
 	
 	public void translate(double x, double y) {
@@ -123,7 +155,7 @@ public class Entity extends Dispatcher implements Listener {
 	}
 	
 	public void setRotation(double rot) {
-		this.model.getShape().setRotation(rot);
+		this.setPosRot(this.getPosX(), this.getPosY(), rot);
 	}
 	
 	public double getVelX() {
@@ -284,16 +316,6 @@ public class Entity extends Dispatcher implements Listener {
 			this.setVelocity(this.vel_x+(this.accel_x*dt), this.vel_y+(this.accel_y*dt), this.vel_rot+(this.accel_rot*dt));
 			this.setPosition(this.getPosX()+(this.vel_x*dt), this.getPosY()+(this.vel_y*dt));
 			this.setRotation(this.getRotation()+(this.vel_rot*dt));
-			
-			//only set moved flag if velocity is not 0
-			if ((this.vel_x != 0.0) || (this.vel_y != 0.0) || (this.vel_rot != 0.0)) {
-				moved = true;
-				
-				//broadcast message: ENTITY_MOVE
-				EntityMoveMessage move_msg = new EntityMoveMessage(MsgType.ENTITY_MOVE, this,
-						this.vel_x*dt, this.vel_y*dt, this.vel_rot*dt);
-				this.broadcast(move_msg);
-			}
 		}
 	}
 	

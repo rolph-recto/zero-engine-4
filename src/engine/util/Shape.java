@@ -38,6 +38,10 @@ public abstract class Shape {
 		this.setPosition(this.pos_x, y);
 	}
 	
+	public void translate(double x, double y) {
+		this.setPosition(this.pos_x+x, this.pos_y+y);
+	}
+	
 	public double getPosX() {
 		return this.pos_x;
 	}

@@ -66,8 +66,9 @@ public abstract class Controller implements Listener {
 	}
 	
 	//remove an entity from the controller
-	public boolean removeEntity(Entity e) {
-		return this.removeEntity(e.getId());
+	public void removeEntity(Entity e) {
+		e.removeSubscriber(this);
+		this.entity_list.remove(e);
 	}
 	
 	//remove an entity from the controller
@@ -76,16 +77,14 @@ public abstract class Controller implements Listener {
 	public boolean removeEntity(long id) {
 		for (Entity e : this.entity_list) {
 			if (e.getId() == id) {
-				e.removeSubscriber(this);
-				this.entity_list.remove(e);
-				return true;
+				this.removeEntity(e);
 			}
 		}
 		return false;
 	}
 	
 	public ArrayList<Entity> getEntityList() {
-		return this.getEntityList();
+		return this.entity_list;
 	}
 	
 	public Entity getEntityById(long id) {

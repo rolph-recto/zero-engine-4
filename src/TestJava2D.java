@@ -252,7 +252,7 @@ class CollisionListener implements Listener {
 		switch(msg.getType()) {
 		case ENTITY_COLLIDE_ENTITY:
 			col_msg = (EntityCollisionMessage)msg;
-			System.out.println(col_msg.getEntity()+" "+col_msg.getEntity2());
+			System.out.println(col_msg.getEntity()+" "+col_msg.getEntity2()+" "+col_msg.getEntity2().isDead());
 			break;
 		case ENTITY_COLLIDE_WALL:
 			col_msg = (EntityCollisionMessage)msg;
@@ -421,7 +421,7 @@ public class TestJava2D extends JFrame implements KeyListener {
 		
 		db.addEntityType("player", PlayerType.instance);
 		db.addEntityType("bullet", BulletType.instance);
-			
+		
         this.level = new Level(this.map, db);
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
