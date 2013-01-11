@@ -392,12 +392,7 @@ public class Level extends Dispatcher implements Listener {
 		}
 	}
 	
-	//check collision for one entity
-	//returns true if there was a collision
-	//if update_old_pos is true, then the entity's old position will be recorded
-	//only update the old position when we know this is the last call
-	//to checkCollision(); else, the old position will be wrong
-	protected boolean checkCollision(Entity e) {
+	protected boolean checkCollision(Entity e, boolean update_col_list, ArrayList<Entity> col_list) {
 		TileData tile_data = this.map.getTileData();
 		MapLayer base = this.map.getBaseLayer();
 		ArrayList<ArrayList<ArrayList<Long>>> entity_map = this.col_map.getEntityMap();
@@ -460,21 +455,36 @@ public class Level extends Dispatcher implements Listener {
 						
 						//objects collide
 						if (entity_shape.collision(e2_shape)) {
-							//check collision mask first before doing collision response
-							 if ((e2.getCollisionType()&e.getCollisionMask()) != 0) {
-								//collision response: translate entity away from other entity
-								Vector2D mtv = e2_shape.getMTV(entity_shape);
-								entity_shape.translate(mtv.getX(), mtv.getY());
+							//if update_col_list is true,
+							//check first if e has collided with e2
+							//this prevents multiple collision events for bullets
+							boolean collide = false;
+							if (update_col_list == false) {
+								collide = true;
+							}
+							else if (update_col_list == true && col_list.contains(e2) == false) {
+								collide = true;
+							}
 							
-								if (mtv.getX() != 0.0) col_x = true;
-								if (mtv.getY() != 0.0) col_y = true;
-							 }
-							
-							//broadcast the message
-							//must broadcast two messages so each entity
-							//can respond to the collision accordingly
-							e.broadcast(new EntityCollisionMessage(e, e2));
-							e2.broadcast(new EntityCollisionMessage(e2, e));
+							if (collide) {
+								//check collision mask first before doing collision response
+								if ((e2.getCollisionType()&e.getCollisionMask()) != 0) {
+									//collision response: translate entity away from other entity
+									Vector2D mtv = e2_shape.getMTV(entity_shape);
+									entity_shape.translate(mtv.getX(), mtv.getY());
+								
+									if (mtv.getX() != 0.0) col_x = true;
+									if (mtv.getY() != 0.0) col_y = true;
+								}
+								
+								//broadcast the message
+								//must broadcast two messages so each entity
+								//can respond to the collision accordingly
+								e.broadcast(new EntityCollisionMessage(e, e2));
+								e2.broadcast(new EntityCollisionMessage(e2, e));
+								//add e2 to the col list
+								if (update_col_list) col_list.add(e2); 
+							}
 						}
 					}
 				}
@@ -491,6 +501,15 @@ public class Level extends Dispatcher implements Listener {
 		}
 		
 		return col_x || col_y;
+	}
+	
+	//check collision for one entity
+	//returns true if there was a collision
+	//if update_old_pos is true, then the entity's old position will be recorded
+	//only update the old position when we know this is the last call
+	//to checkCollision(); else, the old position will be wrong
+	protected boolean checkCollision(Entity e) {
+		return this.checkCollision(e, false, null);
 	}
 	
 	//check if objects are colliding, then broadcast collision messages
@@ -520,17 +539,15 @@ public class Level extends Dispatcher implements Listener {
 					Vector2D dir = new Vector2D(x2-x1, y2-y1);
 					int magnitude = (int)dir.getMagnitude();
 					dir.normalize();
+					ArrayList<Entity> col_list = new ArrayList<Entity>();
 					//set the magnitude in multiples of 5, which is arbitrary
 					//set it lower than 5 to have more accurate but slower raycasting
 					//set it higher to have less accure but faster raycasting
 					for (int i=1; i<=magnitude; i+=5) {
 						dir.setMagnitude(i);
 						e.setPosition(x1+dir.getX(), y1+dir.getY());
-						
 						//if there is a collision, stop
-						if (this.checkCollision(e)) {
-							break;
-						}
+						if (this.checkCollision(e, true, col_list)) break;
 					}
 				}
 			}
