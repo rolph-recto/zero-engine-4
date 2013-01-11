@@ -16,7 +16,11 @@ public class NullEntityType implements EntityType {
 	private NullEntityType() {}
 	
 	public String getName() {
-		return "NullEntityType";
+		return "null_entity";
+	}
+	
+	public String getModelName() {
+		return "null";
 	}
 	
 	public Controller createController() {
@@ -40,6 +44,10 @@ public class NullEntityType implements EntityType {
 	}
 	
 	public double getFriction() {
+		return 0.0;
+	}
+	
+	public double getBounce() {
 		return 0.0;
 	}
 	

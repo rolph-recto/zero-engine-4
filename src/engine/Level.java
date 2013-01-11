@@ -239,7 +239,7 @@ public class Level extends Dispatcher implements Listener {
 		//create new entity
 		Entity e = type.createEntity();
 		//Model model_template = type.getModel();
-		Model model_template = this.resources.getModel(type.getName());
+		Model model_template = this.resources.getModel(type.getModelName());
 		Model model = new Model(model_template.getShape().clone(), model_template.getSprite().clone());
 		e.setType(type);
 		e.setModel(model);
@@ -249,6 +249,7 @@ public class Level extends Dispatcher implements Listener {
 		e.setName(name);
 		e.setDynamic(type.isDynamic());
 		e.setFriction(type.getFriction());
+		e.setBounce(type.getBounce());
 		e.setMaxVelocity(type.getMaxVelocity());
 		e.setCollisionMask(type.getCollisionMask());
 		e.setCollisionType(type.getCollisionType());
@@ -291,7 +292,11 @@ public class Level extends Dispatcher implements Listener {
 		}
 		
 		//Broadcast message ENTITY_DESTROY
+		EntityMessage destroy_msg = new EntityMessage(MsgType.ENTITY_DESTROY, e);
+		//this for the subscribers that listen to the ALL entity destructions
 		this.broadcast(new EntityMessage(MsgType.ENTITY_DESTROY, e));
+		//this is for the subscribers that listener for events for this one particular entity
+		e.broadcast(destroy_msg);
 	}
 	
 	//remove an entity from the level
@@ -370,6 +375,8 @@ public class Level extends Dispatcher implements Listener {
 	
 	//move entities according to their acceleration and velocity
 	protected void updatePhysics() {
+		int map_width = this.map.getBaseLayer().getWidth()*this.map.getTileData().getTileWidth();
+		int map_height = this.map.getBaseLayer().getHeight()*this.map.getTileData().getTileHeight();
 		for (Entity e : this.entity_list) {
 			e.setMoved(false); //trip only when position changes
 			e.move(1.0); //move with 1 time step
@@ -377,6 +384,11 @@ public class Level extends Dispatcher implements Listener {
 			//for simplicity, treat rotational friction constant as 0.0
 			e.setVelocity(e.getVelX()*e.getFriction(), e.getVelY()*e.getFriction(), 0.0);
 			e.setAcceleration(0.0, 0.0, 0.0); //forces must apply themselves to objects every frame
+			
+			//if the entity out of the map boundary, is it dead!
+			if (e.getPosX()<0.0 || e.getPosX()>map_width || e.getPosY()<0.0 || e.getPosY()>map_height) {
+				e.setDead(true);
+			}
 		}
 	}
 	
@@ -470,9 +482,9 @@ public class Level extends Dispatcher implements Listener {
 		} //monster of a method!
 		
 		//if the entity collides and is moved in a particular axis,
-		//reset its velocity in that axis
-		if (col_x) e.setVelX(0.0);
-		if (col_y) e.setVelY(0.0);
+		//make the entity bounce in that axis
+		if (col_x) e.setVelX(-e.getVelX()*e.getBounce());
+		if (col_y) e.setVelY(-e.getVelY()*e.getBounce());
 		//only move the entity if it actually collided with something
 		if (col_x || col_y) {
 			e.setPosition(entity_shape.getPosX(), entity_shape.getPosY());

@@ -14,6 +14,7 @@ import java.util.*;
  */
 public interface EntityType {
 	public abstract String getName();
+	public abstract String getModelName();
 	
 	//controller
 	public abstract Controller createController();
@@ -36,6 +37,9 @@ public interface EntityType {
 	//constant of friction
 	//this is a value from 1 to 0
 	public abstract double getFriction();
+	//"bounciness" when the entity hits a wall
+	//this is a value from 1 to 0
+	public abstract double getBounce();
 	//sets the maximum  absolute value of the entity's velocity
 	//does not include rotation
 	public abstract double getMaxVelocity();

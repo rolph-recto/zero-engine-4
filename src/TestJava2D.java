@@ -31,6 +31,7 @@ import engine.ResourceDB;
 import engine.TileData;
 import engine.View;
 import engine.msgtype.EntityCollisionMessage;
+import engine.msgtype.EntityMessage;
 import engine.msgtype.EntityMoveMessage;
 import engine.msgtype.LevelMessage;
 import engine.util.Circle;
@@ -57,10 +58,18 @@ class BulletController extends Controller {
 	
 	public void onMessage(Message msg) {
 		switch (msg.getType()) {
+		//if any of the bullets are not moving, they are dead
+		case LEVEL_UPDATE:
+			for (Entity e : this.entity_list) {
+				if (e.getVelX() == 0.0 && e.getVelY() == 0) {
+					e.setDead(true);
+				}
+			}
+			break;
 		//if a bullet collides with a wall, the bullet is dead
 		case ENTITY_COLLIDE_WALL:
 			EntityCollisionMessage col_msg = (EntityCollisionMessage)msg;
-			col_msg.getEntity().setDead(true);
+			//col_msg.getEntity().setDead(true);
 		}
 	}
 }
@@ -72,6 +81,10 @@ class BulletType implements EntityType {
 	private BulletType() {}
 	
 	public String getName() {
+		return "bullet";
+	}
+	
+	public String getModelName() {
 		return "bullet";
 	}
 	
@@ -93,6 +106,10 @@ class BulletType implements EntityType {
 	
 	public double getFriction() {
 		return 1.0;
+	}
+	
+	public double getBounce() {
+		return 0.80;
 	}
 	
 	public double getMaxVelocity() {
@@ -210,6 +227,10 @@ class PlayerType implements EntityType {
 		return "player";
 	}
 	
+	public String getModelName() {
+		return "player";
+	}
+	
 	public Controller createController() {
 		return new PlayerController();
 	}
@@ -230,6 +251,10 @@ class PlayerType implements EntityType {
 		return 0.8;
 	}
 	
+	public double getBounce() {
+		return 0.0;
+	}
+	
 	public double getMaxVelocity() {
 		return 7.5;
 	}
@@ -246,9 +271,10 @@ class PlayerType implements EntityType {
 	}
 }
 
-class CollisionListener implements Listener {
+class EntityListener implements Listener {
 	public void onMessage(Message msg) {
 		EntityCollisionMessage col_msg;
+		EntityMessage entity_msg;
 		switch(msg.getType()) {
 		case ENTITY_COLLIDE_ENTITY:
 			col_msg = (EntityCollisionMessage)msg;
@@ -257,6 +283,10 @@ class CollisionListener implements Listener {
 		case ENTITY_COLLIDE_WALL:
 			col_msg = (EntityCollisionMessage)msg;
 			System.out.println(col_msg.getEntity()+" "+col_msg.getWallX()+" "+col_msg.getWallY());
+			break;
+		case ENTITY_DESTROY:
+			entity_msg = (EntityMessage)msg;
+			System.out.println("MISTAH KURTZ, HE DEAD "+entity_msg.getEntity());
 			break;
 		default:
 			break;
@@ -428,8 +458,8 @@ public class TestJava2D extends JFrame implements KeyListener {
         
         long id = this.level.createEntity("player", "player1", 200, 200);
         this.player = this.level.getEntityById(id);
-        this.player.addSubscriber(new CollisionListener(), MsgType.ENTITY_COLLIDE_ENTITY);
-        this.player.addSubscriber(new CollisionListener(), MsgType.ENTITY_COLLIDE_WALL);
+        this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_ENTITY);
+        this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_WALL);
         this.mainLoop();
 	}
 	

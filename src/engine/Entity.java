@@ -21,6 +21,7 @@ public class Entity extends Dispatcher implements Listener {
 	protected boolean moved; //did the entity move this frame?
 	protected boolean dynamic; //can the entity move?
 	protected double friction; //constant of friction
+	protected double bounce; //constant of "bounciness"
 	protected double max_vel; //maximum velocity
 	protected int col_mask; //what other types of entities will this collide with?
 	protected int col_type; //what type of entity is this, for collision response purposes?
@@ -258,11 +259,32 @@ public class Entity extends Dispatcher implements Listener {
 	
 	//friction should be a value between 0.0 and 1.0
 	public void setFriction(double friction) {
-		if (friction < 0.0 || friction > 1.0) {
-			throw new IllegalArgumentException("Entity: Friction constant must be between 0.0 and 1.0");
+		if (friction < 0.0) {
+			this.friction = 0.0;
 		}
-		
-		this.friction = friction;
+		else if (friction > 1.0) {
+			this.friction = 1.0;
+		}
+		else {
+			this.friction = friction;
+		}
+	}
+	
+	public double getBounce() {
+		return this.bounce;
+	}
+	
+	//friction should be a value between 0.0 and 1.0
+	public void setBounce(double bounce) {
+		if (bounce < 0.0) {
+			this.bounce = 0.0;
+		}
+		else if (bounce > 1.0) {
+			this.bounce = 1.0;
+		}
+		else {
+			this.bounce = bounce;
+		}
 	}
 	
 	public double getMaxVelocity() {
