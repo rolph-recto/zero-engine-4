@@ -406,8 +406,8 @@ public class Level extends Dispatcher implements Listener {
 		int tile_y1 = (entity_cell_y-1 >= 0) ? entity_cell_y-1 : 0;
 		int tile_y2 = (entity_cell_y+1 < map_height ) ? entity_cell_y+1 : map_height-1;
 		
-		boolean col_x = false;
-		boolean col_y = false;
+		boolean col_x = false; //the entity was moved in the x-axis
+		boolean col_y = false; //the entity was moved in the y-axis
 		//check for collisions within the block of tles
 		//(narrow-phase collision detection)
 		for (int x=tile_x1; x<=tile_x2; x++) {
@@ -469,7 +469,8 @@ public class Level extends Dispatcher implements Listener {
 			}
 		} //monster of a method!
 		
-		//if the entity collides, reset its velocity
+		//if the entity collides and is moved in a particular axis,
+		//reset its velocity in that axis
 		if (col_x) e.setVelX(0.0);
 		if (col_y) e.setVelY(0.0);
 		//only move the entity if it actually collided with something
