@@ -444,92 +444,39 @@ public class Level extends Dispatcher implements Listener {
 		for (Entity e : this.entity_list) {
 			//only check for collisions if the entity moved
 			if (e.getMoved()) {
+				
 				//if the entity is not a bullet, no need to raycast
 				//also don't raycast is a bullet-type object is moving slow
 				//slow means that the bullet velocity <= tile dimension divided by 4
-				if (e.isBullet() == false ||
-				(e.getVelX() <= (int)(tile_width/4) && e.getVelY() <= (int)(tile_height/4))) {
+				if (e.isBullet() == false) {
 					this.checkCollision(e);
 				}
 				//raycast fast-moving bullets
 				//how it works:
-				//-find the line connecting the old position from the new position
-				//using Bresenham's line algorithm
-				//-move the entity one pixel along the line
+				//-find the vector connecting the old position from the new position
+				//-move the entity along the vector in small increments
 				//-check for collisions at that point
 				//-if there is a collision, stop
 				//-if not, keep going until the end of the line
 				else {
-					//the following code is copypasta from
-					//http://www.gamedev.net/page/resources/_/technical/game-programming/line-drawing-algorithm-explained-r1275
-					int x1 = (int)e.getOldPosX();
-					int y1 = (int)e.getOldPosY();
-					int x2 = (int)e.getPosX();
-					int y2 = (int)e.getPosY();
-					int delta_x = Math.abs(x2 - x1);	// The difference between the x's
-					int delta_y = Math.abs(y2 - y1);	// The difference between the y's
-					int x = x1;	// Start x off at the first pixel
-					int y = y1;	// Start y off at the first pixel
-					int xinc1, yinc1, xinc2, yinc2;
-					int den, num, numadd, numpixels;
-					 
-					// The x-values are increasing
-					if (x2 >= x1) {
-						xinc1 = 1;
-						xinc2 = 1;
-					}
-					// The x-values are decreasing
-					else {
-						xinc1 = -1;
-						xinc2 = -1;
-					}
-					// The y-values are increasing 
-					if (y2 >= y1) {
-						yinc1 = 1;
-						yinc2 = 1;
-					}
-					// The y-values are decreasing
-					else {
-						yinc1 = -1;
-						yinc2 = -1;
-					}
-					 
-					// There is at least one x-value for every y-value
-					if (delta_x >= delta_y) {
-						xinc1 = 0;	// Don't change the x when numerator >= denominator
-						yinc2 = 0;	// Don't change the y for every iteration
-						den = delta_x;
-						num = delta_x / 2;
-						numadd = delta_y;
-						numpixels = delta_x;	// There are more x-values than y-values
-					}
-					// There is at least one y-value for every x-value
-					else {
-					  xinc2 = 0;	// Don't change the x for every iteration
-					  yinc1 = 0;	// Don't change the y when numerator >= denominator
-					  den = delta_y;
-					  num = delta_y / 2;
-					  numadd = delta_x;
-					  numpixels = delta_y;	// There are more y-values than x-values
-					}
-					 
-					for (int curpixel = 0; curpixel <= numpixels; curpixel++) {
-						e.setPosition(x, y);
+					double x1 = e.getOldPosX();
+					double y1 = e.getOldPosY();
+					double x2 = e.getPosX();
+					double y2 = e.getPosY();
+					Vector2D dir = new Vector2D(x2-x1, y2-y1);
+					int magnitude = (int)dir.getMagnitude();
+					dir.normalize();
+					//set the magnitude in multiples of 5, which is arbitrary
+					//set it lower than 5 to have more accurate but slower raycasting
+					//set it higher to have less accure but faster raycasting
+					for (int i=1; i<=magnitude; i+=5) {
+						dir.setMagnitude(i);
+						e.setPosition(x1+dir.getX(), y1+dir.getY());
 						
-						//if there was a collision, stop
+						//if there is a collision, stop
 						if (this.checkCollision(e)) {
 							break;
 						}
-						
-						num += numadd;	// Increase the numerator by the top of the fraction
-						// Check if numerator >= denominator
-						if (num >= den) {
-							num -= den;	// Calculate the new numerator value
-							x += xinc1;	// Change the x as appropriate
-							y += yinc1;	// Change the y as appropriate
-						}
-						x += xinc2;	// Change the x as appropriate
-						y += yinc2;	// Change the y as appropriate
 					}
 				}
 			}

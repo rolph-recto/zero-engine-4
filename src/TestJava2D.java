@@ -192,7 +192,7 @@ class PlayerController extends Controller {
 				bullet_pos.setMagnitude(50.0);
 		        long id = this.level.createEntity("bullet",
 		        		this.player.getPosX()+bullet_pos.getX(), this.player.getPosY()+bullet_pos.getY());
-		        bullet_pos.setMagnitude(30.0);
+		        bullet_pos.setMagnitude(45.0);
 		        this.level.getEntityById(id).setAcceleration(bullet_pos.getX(), bullet_pos.getY(), 0.0);
 			}
 		default:
