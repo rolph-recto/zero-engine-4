@@ -70,6 +70,9 @@ class BulletController extends Controller {
 		case ENTITY_COLLIDE_WALL:
 			EntityCollisionMessage col_msg = (EntityCollisionMessage)msg;
 			//col_msg.getEntity().setDead(true);
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -109,7 +112,7 @@ class BulletType implements EntityType {
 	}
 	
 	public double getBounce() {
-		return 0.80;
+		return 0.25;
 	}
 	
 	public double getMaxVelocity() {
@@ -209,9 +212,17 @@ class PlayerController extends Controller {
 				bullet_pos.setMagnitude(50.0);
 		        long id = this.level.createEntity("bullet",
 		        		this.player.getPosX()+bullet_pos.getX(), this.player.getPosY()+bullet_pos.getY());
-		        bullet_pos.setMagnitude(45.0);
+		        bullet_pos.setMagnitude(120.0);
 		        this.level.getEntityById(id).setAcceleration(bullet_pos.getX(), bullet_pos.getY(), 0.0);
 			}
+			break;
+		case ENTITY_COLLIDE_ENTITY:
+			EntityCollisionMessage col_msg = (EntityCollisionMessage)msg;
+			Entity e2 = col_msg.getEntity2();
+			if (e2.getType().getName().equals("bullet")) {
+				e2.setDead(true);
+			}
+			break;
 		default:
 			break;
 		}
@@ -456,7 +467,7 @@ public class TestJava2D extends JFrame implements KeyListener {
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
-        long id = this.level.createEntity("player", "player1", 200, 200);
+        long id = this.level.createEntity("player", "player1", 500, 200);
         this.player = this.level.getEntityById(id);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_ENTITY);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_WALL);
@@ -510,6 +521,8 @@ public class TestJava2D extends JFrame implements KeyListener {
     }
 
     public static void main(String[] args) {
+
+
     	new TestJava2D();
     }
     

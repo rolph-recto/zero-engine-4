@@ -4,7 +4,6 @@
 package engine;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import engine.msgtype.EntityCollisionMessage;
 import engine.msgtype.EntityMessage;
@@ -370,13 +369,13 @@ public class Level extends Dispatcher implements Listener {
 	//check if position is within the level
 	// TODO finish position validation code
 	protected boolean validPosition(double x, double y) {
-		return ((x >= 0.0) && (y >= 0.0));
+		int map_width = this.map.getBaseLayer().getWidth()*this.map.getTileData().getTileWidth();
+		int map_height = this.map.getBaseLayer().getHeight()*this.map.getTileData().getTileHeight();
+		return ((x >= 0.0) && (y >= 0.0) && (x <= map_width) && (y <= map_height));
 	}
 	
 	//move entities according to their acceleration and velocity
 	protected void updatePhysics() {
-		int map_width = this.map.getBaseLayer().getWidth()*this.map.getTileData().getTileWidth();
-		int map_height = this.map.getBaseLayer().getHeight()*this.map.getTileData().getTileHeight();
 		for (Entity e : this.entity_list) {
 			e.setMoved(false); //trip only when position changes
 			e.move(1.0); //move with 1 time step
@@ -385,8 +384,8 @@ public class Level extends Dispatcher implements Listener {
 			e.setVelocity(e.getVelX()*e.getFriction(), e.getVelY()*e.getFriction(), 0.0);
 			e.setAcceleration(0.0, 0.0, 0.0); //forces must apply themselves to objects every frame
 			
-			//if the entity out of the map boundary, is it dead!
-			if (e.getPosX()<0.0 || e.getPosX()>map_width || e.getPosY()<0.0 || e.getPosY()>map_height) {
+			//if the entity out of the map boundary, it is dead!
+			if (this.validPosition(e.getPosX(), e.getPosY()) == false) {
 				e.setDead(true);
 			}
 		}
@@ -449,8 +448,8 @@ public class Level extends Dispatcher implements Listener {
 					Entity e2 = this.getEntityById(e2_id.longValue());
 					
 					//make sure the entity doesn't check collision with itself!
-					//also check collision type first
-					if (e2 != null && e != e2) {
+					//also check collision type and that the other entity is not dead
+					if (e2 != null && e != e2 && e2.isDead() == false) {
 						Shape e2_shape = e2.getModel().getShape();
 						
 						//objects collide
@@ -516,7 +515,8 @@ public class Level extends Dispatcher implements Listener {
 	protected void checkCollisions() {
 		for (Entity e : this.entity_list) {
 			//only check for collisions if the entity moved
-			if (e.getMoved()) {
+			//AND if the entity is not dead
+			if (e.getMoved() == true && e.isDead() == false) {
 				
 				//if the entity is not a bullet, no need to raycast
 				//also don't raycast is a bullet-type object is moving slow
