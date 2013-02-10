@@ -208,6 +208,7 @@ class PlayerController extends Controller {
 			this.player.onMessage(move_msg);
 			
 			if (key_state[KeyEvent.VK_SPACE]) {
+				cos += Math.random();
 				Vector2D bullet_pos = new Vector2D(cos, comp_y/magnitude);
 				bullet_pos.setMagnitude(50.0);
 		        long id = this.level.createEntity("bullet",
@@ -521,8 +522,6 @@ public class TestJava2D extends JFrame implements KeyListener {
     }
 
     public static void main(String[] args) {
-
-
     	new TestJava2D();
     }
     
