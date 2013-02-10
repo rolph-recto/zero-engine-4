@@ -1,3 +1,5 @@
+//EntityMoveMessage.java
+
 package engine.msgtype;
 
 import engine.*;
