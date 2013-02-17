@@ -42,6 +42,9 @@ class PlayerController extends Controller {
 		switch (msg.getType()) {
 		case LEVEL_UPDATE:
 			LevelMessage level_msg = (LevelMessage)msg;
+			//update the weapon
+			//needed for reload times, etc.
+			this.player.getWeapon().update();
 			
 			//move the player
 			boolean[] key_state = level_msg.getKeyState();
@@ -85,13 +88,7 @@ class PlayerController extends Controller {
 			this.player.onMessage(move_msg);
 			
 			if (key_state[KeyEvent.VK_SPACE]) {
-				cos += Math.random();
-				Vector2D bullet_pos = new Vector2D(cos, comp_y/magnitude);
-				bullet_pos.setMagnitude(50.0);
-		        long id = this.level.createEntity("bullet",
-		        		this.player.getPosX()+bullet_pos.getX(), this.player.getPosY()+bullet_pos.getY());
-		        bullet_pos.setMagnitude(120.0);
-		        this.level.getEntityById(id).setAcceleration(bullet_pos.getX(), bullet_pos.getY(), 0.0);
+				this.player.getWeapon().fire(this.level, 360.0 - angle);
 			}
 			break;
 		case ENTITY_COLLIDE_ENTITY:

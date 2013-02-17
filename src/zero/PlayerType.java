@@ -21,6 +21,14 @@ class Player extends Entity {
 	// TODO make Weapon attribute final
 	protected Weapon weapon;
 	
+	public Player() {
+		this.weapon = new Weapon(this);
+		this.weapon.setMaxAmmo(1000);
+		this.weapon.setClipSize(100);
+		this.weapon.setClipAmmo(100);
+		this.weapon.setNextBulletTime(10);
+	}
+	
 	//getters and setters
 	public int getHealth() {
 		return this.health;
