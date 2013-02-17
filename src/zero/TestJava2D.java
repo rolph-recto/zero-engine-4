@@ -44,6 +44,7 @@ import engine.util.Sprite;
 import engine.util.Tileset;
 import engine.util.Vector2D;
 
+/*
 class Bullet extends Entity {
 	public Bullet() {}
 }
@@ -82,7 +83,7 @@ class BulletType implements EntityType {
 	public static final BulletType instance = new BulletType();
 	private static final BulletController controller = new BulletController();
 
-	private BulletType() {}
+	protected BulletType() {}
 	
 	public String getName() {
 		return "bullet";
@@ -131,6 +132,7 @@ class BulletType implements EntityType {
 		return 0x0008;
 	}
 }
+*/
 
 class EntityListener implements Listener {
 	public void onMessage(Message msg) {
