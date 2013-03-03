@@ -1,5 +1,7 @@
 package zero;
 
+import java.util.Random;
+
 import engine.Level;
 import engine.util.Vector2D;
 
@@ -36,6 +38,7 @@ public class Weapon {
 	
 	public Weapon(Player p) {
 		this.player = p;
+		this.accuracy = 1.0;
 	}
 	
 	//getters and setters
@@ -139,13 +142,25 @@ public class Weapon {
 	
 	//end of getters and setters
 	
+	//start the reload sequence
+	public void startReload() {
+		//only reload if the clip isn't full
+		if (this.clipAmmo < this.clipSize) {
+			this.reloading = true;
+		}
+	}
+	
+	//end of reload sequence
+	//(i.e., number of frames passed to satisfy reloadTime)
 	//reload the weapon
 	protected void reload() {
 		this.reloading = false;
 		this.reloadCounter = 0;
+		int oldClipAmmo = this.clipAmmo;
 		this.setClipAmmo((this.ammo < this.clipSize) ?
 				this.ammo : this.clipSize);
-		this.decreaseAmmo(this.clipSize);
+		this.decreaseAmmo(this.clipAmmo - oldClipAmmo);
+		System.out.println(this.clipAmmo + " " + this.ammo);
 	}
 	
 	//update one time step
@@ -179,12 +194,25 @@ public class Weapon {
 		this.waiting = true;
 	}
 	
+	//take into account the accuracy of the weapon
+	protected double calculateFiringAngle(double angle) {
+		//the range of the possible angles that the weapon will fire
+		double angleSpread = 360 * (1.0 - this.accuracy);
+		double minAngle = angle - (angleSpread/2.0);
+		double maxAngle = angle + (angleSpread/2.0);
+
+		//return a random angle between minAngle and maxAngle
+		return minAngle + (Math.random() * (maxAngle - minAngle));
+	}
+	
 	//fire bullets
 	public void fire(Level level, double angle) {
 		//only fire if the weapon is not waiting or reloading
 		if (!this.waiting && !this.reloading && this.clipAmmo > 0) {
-			Vector2D bullet_pos = new Vector2D(Math.cos(Math.toRadians(angle)),
-					Math.sin(Math.toRadians(angle)));
+					
+			double radians = Math.toRadians(this.calculateFiringAngle(angle));
+			Vector2D bullet_pos = new Vector2D(Math.cos(radians),
+					Math.sin(radians));
 			bullet_pos.setMagnitude(50.0);
 			
 	        long id = level.createEntity("bullet",

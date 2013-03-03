@@ -65,6 +65,9 @@ class PlayerController extends Controller {
 			else if (key_state[KeyEvent.VK_D]) {
 				move_x = force;
 			}
+			else if (key_state[KeyEvent.VK_R]) {
+				this.player.getWeapon().startReload();
+			}
 
 			//change player orientation
 			double move_rot = 0.0;

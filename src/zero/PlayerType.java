@@ -24,9 +24,12 @@ class Player extends Entity {
 	public Player() {
 		this.weapon = new Weapon(this);
 		this.weapon.setMaxAmmo(1000);
-		this.weapon.setClipSize(100);
-		this.weapon.setClipAmmo(100);
-		this.weapon.setNextBulletTime(10);
+		this.weapon.setAmmo(1000);
+		this.weapon.setClipSize(30);
+		this.weapon.setClipAmmo(30);
+		this.weapon.setNextBulletTime(4);
+		this.weapon.setReloadTime(10);
+		this.weapon.setAccuracy(0.97);
 	}
 	
 	//getters and setters
