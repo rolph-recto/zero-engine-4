@@ -222,10 +222,15 @@ public class TestJava2D extends JFrame implements KeyListener {
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
-        long id = this.level.createEntity("heavy", "player1", 500, 200);
+        long id = this.level.createEntity("ranger", "player1", 500, 200);
+        long id2 = this.level.createEntity("ranger", "player2", 700, 200);
         this.player = this.level.getEntityById(id);
+        Player player2 = (Player)this.level.getEntityById(id2);
+        player2.setEnabled(false);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_ENTITY);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_WALL);
+        player2.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_ENTITY);
+        player2.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_WALL);
         this.mainLoop();
 	}
 	

@@ -169,7 +169,6 @@ public abstract class Weapon {
 		this.setClipAmmo((this.ammo < this.clipSize) ?
 				this.ammo : this.clipSize);
 		this.decreaseAmmo(this.clipAmmo - oldClipAmmo);
-		System.out.println(this.clipAmmo + " " + this.ammo);
 	}
 	
 	//update one time step
@@ -221,8 +220,6 @@ public abstract class Weapon {
 	        long id = level.createEntity("bullet",
 	        		this.player.getPosX()+bullet_pos.getX(),
 	        		this.player.getPosY()+bullet_pos.getY());
-	        
-	        System.out.println(this.bulletSpeed);
 	        
 	        bullet_pos.setMagnitude(this.bulletSpeed);
 	        level.getEntityById(id).setAcceleration(bullet_pos.getX(),

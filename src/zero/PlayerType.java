@@ -14,12 +14,17 @@ abstract class Player extends Entity {
 	protected int health;
 	protected int kills;
 	protected int deaths;
+	protected boolean enabled;
 	
 	//weapon used by the player
 	//since there is one weapon per class,
 	//make the weapon immutable
 	// TODO make Weapon attribute final
 	protected Weapon weapon;
+	
+	protected Player() {
+		this.enabled = true;
+	}
 	
 	//getters and setters
 	public int getHealth() {
@@ -59,6 +64,14 @@ abstract class Player extends Entity {
 	
 	public void incrementDeaths() {
 		this.setDeaths(this.deaths+1);
+	}
+	
+	public boolean isEnabled() {
+		return this.enabled;
+	}
+	
+	public void setEnabled(boolean enable) {
+		this.enabled = enable;
 	}
 	
 	//don't make an accessor for weapon
