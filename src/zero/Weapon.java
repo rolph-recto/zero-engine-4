@@ -8,7 +8,7 @@ import engine.util.Vector2D;
 /* Weapon class
  * Contains data about the weapon used by players
  */
-public class Weapon {
+public abstract class Weapon {
 	//maximum amount of ammo in weapon
 	protected int maxAmmo;
 	//current amount of ammo
@@ -33,12 +33,13 @@ public class Weapon {
 	protected int reloadCounter;
 	//is the weapon reloading? (i.e., can't fire)
 	protected boolean reloading;
+	//the speed of the bullet after it is shot
+	protected double bulletSpeed;
 	//the player who owns this weapon
 	protected Player player;
 	
-	public Weapon(Player p) {
+	protected Weapon(Player p) {
 		this.player = p;
-		this.accuracy = 1.0;
 	}
 	
 	//getters and setters
@@ -132,6 +133,14 @@ public class Weapon {
 		this.reloading = reloading;
 	}
 	
+	public double getBulletSpeed() {
+		return this.bulletSpeed;
+	}
+	
+	public void setBulletSpeed(double speed) {
+		this.bulletSpeed = (speed > 0.0) ? speed : 1.0;
+	}
+	
 	public Player getPlayer() {
 		return player;
 	}
@@ -188,12 +197,6 @@ public class Weapon {
 		}
 	}
 	
-	//fire a bullet
-	protected void expendBullet() {
-		this.decreaseClipAmmo();
-		this.waiting = true;
-	}
-	
 	//take into account the accuracy of the weapon
 	protected double calculateFiringAngle(double angle) {
 		//the range of the possible angles that the weapon will fire
@@ -219,11 +222,14 @@ public class Weapon {
 	        		this.player.getPosX()+bullet_pos.getX(),
 	        		this.player.getPosY()+bullet_pos.getY());
 	        
-	        bullet_pos.setMagnitude(60.0);
+	        System.out.println(this.bulletSpeed);
+	        
+	        bullet_pos.setMagnitude(this.bulletSpeed);
 	        level.getEntityById(id).setAcceleration(bullet_pos.getX(),
 	        		bullet_pos.getY(), 0.0);
 	        
-	        this.expendBullet();
+			this.decreaseClipAmmo();
+			this.waiting = true;
 		}
 	}
 }

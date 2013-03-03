@@ -10,7 +10,7 @@ import engine.EntityType;
  * Base class for all player objects
  * TODO make Player class abstract
  */
-class Player extends Entity {
+abstract class Player extends Entity {
 	protected int health;
 	protected int kills;
 	protected int deaths;
@@ -20,17 +20,6 @@ class Player extends Entity {
 	//make the weapon immutable
 	// TODO make Weapon attribute final
 	protected Weapon weapon;
-	
-	public Player() {
-		this.weapon = new Weapon(this);
-		this.weapon.setMaxAmmo(1000);
-		this.weapon.setAmmo(1000);
-		this.weapon.setClipSize(30);
-		this.weapon.setClipAmmo(30);
-		this.weapon.setNextBulletTime(4);
-		this.weapon.setReloadTime(10);
-		this.weapon.setAccuracy(0.97);
-	}
 	
 	//getters and setters
 	public int getHealth() {
@@ -82,9 +71,7 @@ class Player extends Entity {
 /* PlayerType class
  * EntityType of player
  */
-class PlayerType implements EntityType {
-	public static final PlayerType instance = new PlayerType();
-
+abstract class PlayerType implements EntityType {
 	protected PlayerType() {}
 	
 	public String getName() {
@@ -99,9 +86,7 @@ class PlayerType implements EntityType {
 		return new PlayerController();
 	}
 	
-	public Entity createEntity() {
-		return new Player();
-	}
+	abstract public Entity createEntity();
 	
 	public boolean isDynamic() {
 		return true;

@@ -3,14 +3,18 @@
 package zero;
 
 import engine.Entity;
+import engine.EntityType;
 
 class Heavy extends Player {
-	
-	//need to define health and weapon, and power based on the player 
-	 public Heavy(){}
+	 public Heavy() {
+		 super();
+		 this.weapon = new Shotgun(this);
+	 }
 }
 
 class HeavyType extends PlayerType {
+	public static EntityType instance = new HeavyType();
+	
 	private HeavyType(){
 		super();
 	}
@@ -24,10 +28,10 @@ class HeavyType extends PlayerType {
 	}
 	
 	public String getModelName() {
-		return "heavy";
+		return "player";
 	}
 	
 	public double getMaxVelocity(){
-		return 12;//arbitrary max velocity for now
+		return 6;//arbitrary max velocity for now
 	}
 }

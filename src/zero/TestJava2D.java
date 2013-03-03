@@ -3,27 +3,20 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.MouseInfo;
-import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.util.Timer;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 import org.xml.sax.SAXException;
 
-import engine.Controller;
 import engine.Entity;
-import engine.EntityType;
 import engine.Level;
 import engine.Map;
 import engine.Model;
@@ -33,106 +26,14 @@ import engine.TileData;
 import engine.View;
 import engine.msgtype.EntityCollisionMessage;
 import engine.msgtype.EntityMessage;
-import engine.msgtype.EntityMoveMessage;
-import engine.msgtype.LevelMessage;
 import engine.util.Circle;
 import engine.util.Listener;
 import engine.util.Message;
 import engine.util.Polygon;
-import engine.util.Shape;
 import engine.util.Sprite;
 import engine.util.Tileset;
 import engine.util.Vector2D;
 
-/*
-class Bullet extends Entity {
-	public Bullet() {}
-}
-
-class BulletController extends Controller {
-	public BulletController() {
-		super();
-	}
-	
-	public BulletController(Level l, Entity bullet) {
-		super(l, bullet);
-	}
-	
-	public void onMessage(Message msg) {
-		switch (msg.getType()) {
-		//if any of the bullets are not moving, they are dead
-		case LEVEL_UPDATE:
-			for (Entity e : this.entity_list) {
-				if (e.getVelX() == 0.0 && e.getVelY() == 0) {
-					e.setDead(true);
-				}
-			}
-			break;
-		//if a bullet collides with a wall, the bullet is dead
-		case ENTITY_COLLIDE_WALL:
-			EntityCollisionMessage col_msg = (EntityCollisionMessage)msg;
-			//col_msg.getEntity().setDead(true);
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-class BulletType implements EntityType {
-	public static final BulletType instance = new BulletType();
-	private static final BulletController controller = new BulletController();
-
-	protected BulletType() {}
-	
-	public String getName() {
-		return "bullet";
-	}
-	
-	public String getModelName() {
-		return "bullet";
-	}
-	
-	public Controller createController() {
-		return BulletType.controller;
-	}
-	
-	public Entity createEntity() {
-		return new Bullet();
-	}
-	
-	public boolean isDynamic() {
-		return true;
-	}
-	
-	public boolean isBullet() {
-		return true;
-	}
-	
-	public double getFriction() {
-		return 1.0;
-	}
-	
-	public double getBounce() {
-		return 0.25;
-	}
-	
-	public double getMaxVelocity() {
-		return -1.0;
-	}
-	
-	public int getCollisionMask() {
-		//collide with no entities
-		//mask: 0000 0000 0000 0000
-		return 0x0000;
-	}
-	
-	public int getCollisionType() {
-		//bullet type
-		return 0x0008;
-	}
-}
-*/
 
 class EntityListener implements Listener {
 	public void onMessage(Message msg) {
@@ -158,6 +59,7 @@ class EntityListener implements Listener {
 }
 
 public class TestJava2D extends JFrame implements KeyListener {
+	private static final long serialVersionUID = -7164203224196166699L;
 	private BufferedImage img;
 	private TexturePaint texture_img;
 	
@@ -312,14 +214,15 @@ public class TestJava2D extends JFrame implements KeyListener {
 		
 		db.addModel("bullet", model_bullet);
 		
-		db.addEntityType("player", PlayerType.instance);
+		db.addEntityType("heavy", HeavyType.instance);
+		db.addEntityType("ranger", RangerType.instance);
 		db.addEntityType("bullet", BulletType.instance);
 		
         this.level = new Level(this.map, db);
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
-        long id = this.level.createEntity("player", "player1", 500, 200);
+        long id = this.level.createEntity("heavy", "player1", 500, 200);
         this.player = this.level.getEntityById(id);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_ENTITY);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_WALL);

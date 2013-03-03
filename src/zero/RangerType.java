@@ -2,21 +2,25 @@
 package zero;
 
 import engine.Entity;
+import engine.EntityType;
 
-class Sniper extends Player {
-	
+class Ranger extends Player {
 	//define health, weapon, power based on structure of player
-	 public Sniper(){}
+	 public Ranger(){
+		 super();
+		 this.weapon = new MachineGun(this);
+	 }
 }
 
-class SniperType extends PlayerType {
+class RangerType extends PlayerType {
+	public static EntityType instance = new RangerType();
 	
-	private SniperType(){
+	private RangerType(){
 		super();
 	}
 	
 	public Entity createEntity() {
-		return new Sniper();
+		return new Ranger();
 	}
 	
 	public String getName() {
@@ -24,7 +28,7 @@ class SniperType extends PlayerType {
 	}
 	
 	public String getModelName() {
-		return "sniper";
+		return "player";
 	}
 
 	public double getMaxVelocity(){
