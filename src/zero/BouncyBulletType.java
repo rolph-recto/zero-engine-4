@@ -3,10 +3,14 @@ package zero;
 import engine.Controller;
 import engine.Entity;
 
+class BouncyBullet extends Bullet {
+	public BouncyBullet() {}
+}
+
 public class BouncyBulletType extends BulletType {
-	public static final BulletType instance = new BouncyBulletType();
-	private static final BouncyBulletController controller =
-			new BouncyBulletController();
+	public static final BouncyBulletType instance = new BouncyBulletType();
+	protected static final BouncyBulletController controller 
+		= new BouncyBulletController();
 	
 	protected BouncyBulletType() {
 		super();
@@ -19,7 +23,7 @@ public class BouncyBulletType extends BulletType {
 	
 	@Override
 	public String getModelName() {
-		return "bouncy_bullet";
+		return "bullet";
 	}
 	
 	@Override

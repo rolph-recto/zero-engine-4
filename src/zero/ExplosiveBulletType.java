@@ -23,8 +23,8 @@ class ExplosiveBullet extends Bullet {
  */
 public class ExplosiveBulletType extends BulletType {
 	public static final BulletType instance = new BouncyBulletType();
-	private static final BouncyBulletController controller =
-			new BouncyBulletController();
+	private static final ExplosiveBulletController controller =
+			new ExplosiveBulletController();
 	
 	@Override
 	public String getName() {

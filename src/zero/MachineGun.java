@@ -11,5 +11,6 @@ public class MachineGun extends Weapon {
 		this.setReloadTime(30);
 		this.setAccuracy(0.97);
 		this.setBulletSpeed(90.0);
+		this.setBulletType("bouncy_bullet");
 	}
 }

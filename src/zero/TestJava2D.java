@@ -217,6 +217,7 @@ public class TestJava2D extends JFrame implements KeyListener {
 		db.addEntityType("heavy", HeavyType.instance);
 		db.addEntityType("ranger", RangerType.instance);
 		db.addEntityType("bullet", BulletType.instance);
+		db.addEntityType("bouncy_bullet", BouncyBulletType.instance);
 		
         this.level = new Level(this.map, db);
         this.view = new View(this.level, 640, 416);

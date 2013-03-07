@@ -35,11 +35,15 @@ public abstract class Weapon {
 	protected boolean reloading;
 	//the speed of the bullet after it is shot
 	protected double bulletSpeed;
+	//type of bullet to fire
+	protected String bulletType;
 	//the player who owns this weapon
 	protected Player player;
 	
 	protected Weapon(Player p) {
 		this.player = p;
+		//set a regular bullet as the default bulletType
+		this.bulletType = "bullet";
 	}
 	
 	//getters and setters
@@ -141,6 +145,14 @@ public abstract class Weapon {
 		this.bulletSpeed = (speed > 0.0) ? speed : 1.0;
 	}
 	
+	public String getBulletType() {
+		return this.bulletType;
+	}
+	
+	public void setBulletType(String type) {
+		this.bulletType = type;
+	}
+	
 	public Player getPlayer() {
 		return player;
 	}
@@ -217,7 +229,7 @@ public abstract class Weapon {
 					Math.sin(radians));
 			bullet_pos.setMagnitude(50.0);
 			
-	        long id = level.createEntity("bullet",
+	        long id = level.createEntity("bouncy_bullet",
 	        		this.player.getPosX()+bullet_pos.getX(),
 	        		this.player.getPosY()+bullet_pos.getY());
 	        

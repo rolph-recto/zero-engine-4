@@ -48,7 +48,7 @@ class Bullet extends Entity {
 public class BulletType implements EntityType {
 	public static final BulletType instance = new BulletType();
 	private static final BulletController controller = new BulletController();
-
+	
 	protected BulletType() {}
 	
 	public String getName() {

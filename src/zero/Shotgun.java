@@ -16,6 +16,7 @@ public class Shotgun extends Weapon {
 		this.setNextBulletTime(40);
 		this.setAccuracy(0.92);
 		this.setBulletSpeed(45.0);
+		this.setBulletType("bullet");
 		this.bulletsPerShot = 3;
 	}
 	
