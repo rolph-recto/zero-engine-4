@@ -1,6 +1,0 @@
-<resource>
-	<sprite name="hero" file="hero.spr" />
-	<tileset name="tileset" file="tileset.tls" />
-	<model name="player" file="model.txt" />
-	<tiledata name="tiledata" file="tiledata.txt" />
-</resource>
