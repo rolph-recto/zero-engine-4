@@ -8,7 +8,7 @@ import engine.EntityType;
 class Heavy extends Player {
 	 public Heavy() {
 		 super();
-		 this.weapon = new Shotgun(this);
+		 this.weapon = new FastShotgun(this);
 	 }
 }
 
