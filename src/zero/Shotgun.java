@@ -1,5 +1,6 @@
 package zero;
 
+import engine.Entity;
 import engine.Level;
 import engine.util.Vector2D;
 
@@ -16,7 +17,7 @@ public class Shotgun extends Weapon {
 		this.setNextBulletTime(40);
 		this.setAccuracy(0.92);
 		this.setBulletSpeed(45.0);
-		this.setBulletType("bullet");
+		this.setBulletType("explosive_bullet");
 		this.bulletsPerShot = 3;
 	}
 	
@@ -44,12 +45,12 @@ public class Shotgun extends Weapon {
 						Math.sin(radians));
 				bullet_pos.setMagnitude(50.0);
 				
-		        long id = level.createEntity("bullet",
+		        Entity bullet = level.createEntity(this.getBulletType(),
 		        		this.player.getPosX()+bullet_pos.getX(),
 		        		this.player.getPosY()+bullet_pos.getY());
 		        
 		        bullet_pos.setMagnitude(this.bulletSpeed);
-		        level.getEntityById(id).setAcceleration(bullet_pos.getX(),
+		        bullet.setAcceleration(bullet_pos.getX(),
 		        		bullet_pos.getY(), 0.0);
 			}
 			

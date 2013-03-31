@@ -2,6 +2,7 @@ package zero;
 
 import java.util.Random;
 
+import engine.Entity;
 import engine.Level;
 import engine.util.Vector2D;
 
@@ -43,7 +44,7 @@ public abstract class Weapon {
 	protected Weapon(Player p) {
 		this.player = p;
 		//set a regular bullet as the default bulletType
-		this.bulletType = "bullet";
+		this.bulletType = "bouncy_bullet";
 	}
 	
 	//getters and setters
@@ -229,13 +230,12 @@ public abstract class Weapon {
 					Math.sin(radians));
 			bullet_pos.setMagnitude(50.0);
 			
-	        long id = level.createEntity("bouncy_bullet",
+	        Entity bullet = level.createEntity(this.getBulletType(),
 	        		this.player.getPosX()+bullet_pos.getX(),
 	        		this.player.getPosY()+bullet_pos.getY());
 	        
 	        bullet_pos.setMagnitude(this.bulletSpeed);
-	        level.getEntityById(id).setAcceleration(bullet_pos.getX(),
-	        		bullet_pos.getY(), 0.0);
+	        bullet.setAcceleration(bullet_pos.getX(), bullet_pos.getY(), 0.0);
 	        
 			this.decreaseClipAmmo();
 			this.waiting = true;

@@ -140,6 +140,10 @@ public class Level extends Dispatcher implements Listener {
 	protected ResourceDB resources;
 	protected CollisionMap col_map;
 	protected LevelMessage update_msg; //message used to update controller
+	//level is in the updateloop
+	//if the level is in the update loop, no objects can be added
+	protected boolean updateLoop;
+	protected ArrayList<Entity> addEntityList = new ArrayList<Entity> ();
 	
 	protected Level() {
 		super();
@@ -150,6 +154,8 @@ public class Level extends Dispatcher implements Listener {
 		this.ctrl_id = 0;
 		this.ctrl_id_list = new ArrayList<Long> ();
 		this.update_msg = new LevelMessage(MsgType.LEVEL_UPDATE, this, null, 0, 0);
+		this.addEntityList = new ArrayList<Entity> ();
+		this.updateLoop = false;
 	}
 	
 	public Level(Map m, ResourceDB db) {
@@ -196,38 +202,49 @@ public class Level extends Dispatcher implements Listener {
 		//if it is not in the level already, set an id for the entity and add it
 		e.setId(this.getFreeId(IdType.ENTITY));
 		
-		//set up collision map
-		e.addSubscriber(this.col_map, MsgType.ENTITY_MOVE);
-		this.col_map.addEntity(e);
-		
-		this.entity_list.add(e);
-		
-		return e.getId();
+		//don't insert the entity if the level in on the update loop
+		if (!this.updateLoop) {
+			//set up collision map
+			e.addSubscriber(this.col_map, MsgType.ENTITY_MOVE);
+			this.col_map.addEntity(e);
+			
+			//add the object
+			this.entity_list.add(e);
+			
+			return e.getId();
+		}
+		//if the level is in the update loop
+		//add the entity into a list
+		//that will be added after the loop
+		else {
+			this.addEntityList.add(e);
+			return -1;
+		}
 	}
 	
 	//create entity and inserts it into the level
 	//returns object ID
-	public long createEntity(String type_name, double x, double y)  {
+	public Entity createEntity(String type_name, double x, double y)  {
 		EntityType type = this.resources.getEntityType(type_name);
 		return this.createEntity(type, x, y);
 	}
 
 	//create entity and inserts it into the level
 	//returns object ID
-	public long createEntity(EntityType type, double x, double y) {
+	public Entity createEntity(EntityType type, double x, double y) {
 		return this.createEntity(type, "", x, y);
 	}
 	
 	//create entity and inserts it into the level
 	//returns object ID
-	public long createEntity(String type_name, String entity_name, double x, double y)  {
+	public Entity createEntity(String type_name, String entity_name, double x, double y)  {
 		EntityType type = this.resources.getEntityType(type_name);
 		return this.createEntity(type, entity_name, x, y);
 	}
 	
 	//create entity and inserts it into the level
 	//returns object ID
-	public long createEntity(EntityType type, String name, double x, double y) {
+	public Entity createEntity(EntityType type, String name, double x, double y) {
 		// TODO ADD CODE Validate type (check if it exists in the resource database)
 		
 		//validate position
@@ -260,12 +277,16 @@ public class Level extends Dispatcher implements Listener {
 		ctrl.setLevel(this);
 		this.insertController(ctrl);
 
-		this.insertEntity(e);
+		long id = this.insertEntity(e);
 		
-		//Broadcast message ENTITY_CREATE
-		this.broadcast(new EntityMessage(MsgType.ENTITY_CREATE, e));
+		//if the entity will be added later,
+		//broadcast the ENTITY_CREATE message then
+		if (id == -1) {
+			//Broadcast message ENTITY_CREATE
+			this.broadcast(new EntityMessage(MsgType.ENTITY_CREATE, e));
+		}
 		
-		return e.getId();
+		return e;
 	}
 	
 	//this is protected to prevent the user
@@ -557,6 +578,8 @@ public class Level extends Dispatcher implements Listener {
 	//update controllers
 	//this method is called each frame
 	public void update(boolean[] key_state, int mouse_x, int mouse_y) {
+		this.updateLoop = true;
+		
 		//update physics
 		this.updatePhysics();
 		
@@ -577,6 +600,8 @@ public class Level extends Dispatcher implements Listener {
 		//broadcast the message to all the other listeners
 		this.broadcast(this.update_msg);
 		
+		this.updateLoop = false;
+		
 		//remove all dead entities
 		ArrayList<Entity> entity_list_copy = new ArrayList<Entity>(this.entity_list);
 		for (Entity e : entity_list_copy) {
@@ -584,6 +609,16 @@ public class Level extends Dispatcher implements Listener {
 				this.removeEntity(e);
 			}
 		}
+		
+		//add new entities created during the update loop
+		for (Entity e : this.addEntityList) {
+			System.out.println(e);
+			
+			this.insertEntity(e);
+			//now broadcast the ENTITY_CREATE message
+			this.broadcast(new EntityMessage(MsgType.ENTITY_CREATE, e));
+		}
+		this.addEntityList.clear();
 	}
 	
 	//level received a message

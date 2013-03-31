@@ -218,15 +218,14 @@ public class TestJava2D extends JFrame implements KeyListener {
 		db.addEntityType("ranger", RangerType.instance);
 		db.addEntityType("bullet", BulletType.instance);
 		db.addEntityType("bouncy_bullet", BouncyBulletType.instance);
+		db.addEntityType("explosive_bullet", ExplosiveBulletType.instance);
 		
         this.level = new Level(this.map, db);
         this.view = new View(this.level, 640, 416);
         this.view.setPosition(0, 32);
         
-        long id = this.level.createEntity("ranger", "player1", 500, 200);
-        long id2 = this.level.createEntity("ranger", "player2", 700, 200);
-        this.player = this.level.getEntityById(id);
-        Player player2 = (Player)this.level.getEntityById(id2);
+        this.player  = this.level.createEntity("ranger", "player1", 500, 200);
+        Player player2 = (Player)this.level.createEntity("heavy", "player2", 700, 200);
         player2.setEnabled(false);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_ENTITY);
         this.player.addSubscriber(new EntityListener(), MsgType.ENTITY_COLLIDE_WALL);
