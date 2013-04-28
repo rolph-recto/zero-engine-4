@@ -98,8 +98,16 @@ class PlayerController extends Controller {
 		case ENTITY_COLLIDE_ENTITY:
 			EntityCollisionMessage col_msg = (EntityCollisionMessage)msg;
 			Entity e2 = col_msg.getEntity2();
+			//got hit by a bullet
 			if (e2.getType().getName().equals("bullet")) {
 				e2.setDead(true);
+				this.player.changeHealth(-1);
+				System.out.println(this.player.getName() + " got hit! " + this.player.getHealth());
+				if (this.player.getHealth() <= 0) {
+					this.player.incrementDeaths();
+					this.player.setHealth(((PlayerType)this.player.getType()).getMaxHealth());
+					System.out.println(this.player.getName() + " died! " + this.player.getDeaths());
+				}
 			}
 			break;
 		default:

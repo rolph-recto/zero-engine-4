@@ -131,4 +131,6 @@ abstract class PlayerType implements EntityType {
 		//player type
 		return 0x0002;
 	}
+	
+	public abstract int getMaxHealth();
 }
